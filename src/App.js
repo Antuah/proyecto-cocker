@@ -1,13 +1,31 @@
 // src/App.js
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './screens/Login'; // Importa el nuevo componente Login
+import Register from './screens/Register'; // Importa el nuevo componente Register
+import Groups from './screens/Groups'; // Importa el componente de Grupos
+import Navigation from './components/Navigation'; // Componente de navegación
 import './styles/App.css'; // Si tienes estilos globales
 import './styles/Header.css'; // Importa los estilos del componente Login
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Estado para saber si el usuario está logueado
   const [userData, setUserData] = useState(null); // Para guardar los datos del usuario logueado
+  const [loading, setLoading] = useState(true); // Estado de carga inicial
+  const [showRegister, setShowRegister] = useState(false); // Estado para mostrar registro
+
+  // Verificar si hay un token válido al cargar la aplicación
+  useEffect(() => {
+    const token = localStorage.getItem('jwtToken');
+    if (token) {
+      // Aquí podrías hacer una petición al backend para verificar si el token es válido
+      // Por ahora, asumimos que si existe el token, el usuario está logueado
+      setIsLoggedIn(true);
+      // Podrías obtener los datos del usuario del token o hacer una petición
+    }
+    setLoading(false);
+  }, []);
 
   // Función que se llama cuando el login es exitoso en el componente Login.js
   const handleLoginSuccess = (data) => {
@@ -22,36 +40,72 @@ function App() {
     localStorage.removeItem('jwtToken'); // Elimina el token del almacenamiento local
     setIsLoggedIn(false);
     setUserData(null);
+    setShowRegister(false); // Resetear al login
     console.log("Usuario ha cerrado sesión.");
   };
 
+  // Función para cambiar a la vista de registro
+  const handleShowRegister = () => {
+    setShowRegister(true);
+  };
+
+  // Función para cambiar a la vista de login
+  const handleShowLogin = () => {
+    setShowRegister(false);
+  };
+
+  // Función que se llama cuando el registro es exitoso
+  const handleRegisterSuccess = () => {
+    setShowRegister(false); // Volver al login después del registro exitoso
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Sistema de Gestión Ambiental</h1>
-      </header>
-      <main>
-        {isLoggedIn ? (
-          <div className="dashboard">
-            <div className="welcome-card">
-              <h2 className="welcome-title">¡Bienvenido!</h2>
-              <p className="welcome-message">
-                Has iniciado sesión exitosamente en el Sistema de Gestión Ambiental de Morelos.
-              </p>
-              <div className="user-info">
-                <div className="user-name">{userData?.username || 'Usuario'}</div>
-                <div className="user-role">Administrador del Sistema</div>
-              </div>
-              <button className="logout-button" onClick={handleLogout}>
-                Cerrar Sesión
-              </button>
-            </div>
-          </div>
-        ) : (
-          <Login onLoginSuccess={handleLoginSuccess} />
-        )}
-      </main>
-    </div>
+    <Router>
+      <div className="App">
+        <header className="App-header">
+          <h1>Sistema de Gestión Ambiental</h1>
+        </header>
+        <main>
+          {loading ? (
+            <div className="loading">Cargando...</div>
+          ) : isLoggedIn ? (
+            <>
+              <Navigation onLogout={handleLogout} userData={userData} />
+              <Routes>
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/dashboard" element={
+                  <div className="dashboard">
+                    <div className="welcome-card">
+                      <h2 className="welcome-title">¡Bienvenido!</h2>
+                      <p className="welcome-message">
+                        Has iniciado sesión exitosamente en el Sistema de Gestión Ambiental de Morelos.
+                      </p>
+                      <div className="user-info">
+                        <div className="user-name">{userData?.username || 'Usuario'}</div>
+                        <div className="user-role">Administrador del Sistema</div>
+                      </div>
+                    </div>
+                  </div>
+                } />
+                <Route path="/groups" element={<Groups />} />
+              </Routes>
+            </>
+          ) : (
+            showRegister ? (
+              <Register 
+                onRegisterSuccess={handleRegisterSuccess}
+                onShowLogin={handleShowLogin}
+              />
+            ) : (
+              <Login 
+                onLoginSuccess={handleLoginSuccess}
+                onShowRegister={handleShowRegister}
+              />
+            )
+          )}
+        </main>
+      </div>
+    </Router>
   );
 }
 

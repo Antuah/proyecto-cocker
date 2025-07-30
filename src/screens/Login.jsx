@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import '../styles/Login.css'; // Importa el nuevo componente Login
 
-function Login({ onLoginSuccess }) {
+function Login({ onLoginSuccess, onShowRegister }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
@@ -31,14 +31,26 @@ function Login({ onLoginSuccess }) {
       // Verifica si la respuesta HTTP fue exitosa (código 2xx)
       if (response.ok) {
         const data = await response.json(); // Parsea la respuesta JSON del servidor
-        // Aquí puedes esperar que el backend devuelva un token JWT, un mensaje de éxito, etc.
-        console.log('Inicio de sesión exitoso:', data);
+        console.log('🎉 Inicio de sesión exitoso:', data);
         setMessage('¡Inicio de sesión exitoso!');
 
-        // Si tu backend devuelve un token (JWT), guárdalo para futuras peticiones
-        if (data.token) {
-          localStorage.setItem('jwtToken', data.token);
-          console.log('Token JWT guardado:', data.token);
+        // El backend devuelve el token en data.data
+        let token = null;
+        if (data.data && typeof data.data === 'string') {
+          token = data.data; // El token JWT está en data.data
+        } else if (data.token) {
+          token = data.token;
+        } else if (data.jwt) {
+          token = data.jwt;
+        } else if (data.accessToken) {
+          token = data.accessToken;
+        }
+
+        if (token) {
+          localStorage.setItem('jwtToken', token);
+          console.log('✅ Token JWT guardado exitosamente');
+        } else {
+          console.log('⚠️ No se encontró token en la respuesta');
         }
 
         // Llama a una función `onLoginSuccess` que se pasa como prop,
@@ -106,6 +118,17 @@ function Login({ onLoginSuccess }) {
           </button>
         </form>
         {message && <div className={getMessageClass()}>{message}</div>}
+        
+        <div className="login-footer">
+          <p>¿No tienes cuenta?</p>
+          <button 
+            className="link-button" 
+            onClick={onShowRegister}
+            disabled={message.includes('Iniciando')}
+          >
+            Crear Cuenta
+          </button>
+        </div>
       </div>
     </div>
   );
