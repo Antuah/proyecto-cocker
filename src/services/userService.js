@@ -1,53 +1,62 @@
 // src/services/userService.js
 import axios from 'axios';
 
-console.log('🔧 UserService - Modo sin errores activado');
+const API_BASE_URL = 'http://localhost:8080/api/auth';
+
+// Configurar axios para incluir el token JWT
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Interceptor para añadir el token JWT a todas las peticiones
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('jwtToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 // Servicio para obtener usuarios
 export const userService = {
   // GET - Obtener todos los usuarios con rol MEMBER (rol_id = 3)
   getUsersWithMemberRole: async () => {
     try {
-      console.log('⚠️ Backend aún no tiene endpoint GET para usuarios');
-      console.log('🧪 Usando datos de prueba para evitar errores...');
+      const response = await api.get('');
       
-      // Datos de prueba mientras se implementa el backend
-      const testUsers = [
-        {
-          id: 1,
-          username: 'testuser1',
-          nombreCompleto: 'Usuario Prueba 1',
-          correo: 'test1@ejemplo.com',
-          telefono: '1234567890',
-          rol_id: 3,
-          rol: { id: 3, name: 'MEMBER' }
-        },
-        {
-          id: 2,
-          username: 'testuser2',
-          nombreCompleto: 'Usuario Prueba 2',
-          correo: 'test2@ejemplo.com',
-          telefono: '0987654321',
-          rol_id: 3,
-          rol: { id: 3, name: 'MEMBER' }
-        },
-        {
-          id: 3,
-          username: 'testuser3',
-          nombreCompleto: 'Usuario Prueba 3',
-          correo: 'test3@ejemplo.com',
-          telefono: '5555555555',
-          rol_id: 3,
-          rol: { id: 3, name: 'MEMBER' }
-        }
-      ];
+      // Verificar si la respuesta tiene la estructura esperada
+      let allUsers = [];
       
-      console.log('👥 Devolviendo usuarios de prueba:', testUsers);
-      return testUsers;
+      if (response.data && response.data.data && Array.isArray(response.data.data)) {
+        // Formato: {message: '...', data: [...], error: false, status: 'OK'}
+        allUsers = response.data.data;
+      } else if (Array.isArray(response.data)) {
+        // Formato directo: [...]
+        allUsers = response.data;
+      }
+      
+      // Filtrar usuarios con rol_id = 3 (MEMBER)
+      const memberUsers = allUsers.filter(user => {
+        // Verificar diferentes formas de encontrar rol_id = 3
+        return user.rol_id === 3 ||
+               user.rolId === 3 ||
+               (user.rol && user.rol.id === 3) ||
+               (user.role && user.role.id === 3) ||
+               user.rol === 3;
+      });
+      
+      return memberUsers;
       
     } catch (error) {
-      console.error('❌ Error en userService:', error);
-      // Incluso si hay error, devolver array vacío para no romper la UI
+      console.error('Error al obtener usuarios:', error);
       return [];
     }
   },

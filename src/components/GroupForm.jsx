@@ -1,6 +1,6 @@
 // src/components/GroupForm.jsx
 import React, { useState, useEffect } from 'react';
-import { userService } from '../services/userServiceNew';
+import { userService } from '../services/userService';
 import '../styles/GroupForm.css';
 
 const GroupForm = ({ group, onSubmit, onCancel }) => {
