@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './screens/Login'; // Importa el nuevo componente Login
 import Register from './screens/Register'; // Importa el nuevo componente Register
 import Groups from './screens/Groups'; // Importa el componente de Grupos
+import Events from './screens/Events'; // Importa el componente de Eventos
 import Navigation from './components/Navigation'; // Componente de navegación
 import './styles/App.css'; // Si tienes estilos globales
 import './styles/Header.css'; // Importa los estilos del componente Login
@@ -88,6 +89,7 @@ function App() {
                   </div>
                 } />
                 <Route path="/groups" element={<Groups />} />
+                <Route path="/events" element={<Events />} />
               </Routes>
             </>
           ) : (

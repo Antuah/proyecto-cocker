@@ -26,6 +26,12 @@ const Navigation = ({ onLogout, userData }) => {
           >
             👥 Grupos
           </Link>
+          <Link 
+            to="/events" 
+            className={`nav-link ${isActive('/events') ? 'active' : ''}`}
+          >
+            📅 Eventos
+          </Link>
         </div>
         
         <div className="nav-user">
