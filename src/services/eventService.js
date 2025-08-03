@@ -7,16 +7,48 @@ export const eventService = {
   createEvent: async (eventData) => {
     try {
       const token = localStorage.getItem('jwtToken');
+      console.log('Creating event with data:', eventData);
+      console.log('API URL:', `${API_BASE_URL}/api/events`);
+      console.log('JWT Token present:', !!token);
+      console.log('JWT Token value:', token ? token.substring(0, 50) + '...' : 'No token');
+      
+      // Verificar que el token no esté vacío y tenga el formato correcto
+      if (!token || token.trim() === '') {
+        throw new Error('No authentication token found');
+      }
+
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token.trim()}`
+      };
+
+      console.log('Request headers:', headers);
+      console.log('Request body:', JSON.stringify(eventData, null, 2));
+      
       const response = await fetch(`${API_BASE_URL}/api/events`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : ''
-        },
+        headers: headers,
         body: JSON.stringify(eventData)
       });
 
+      console.log('Create event response status:', response.status);
+      console.log('Create event response ok:', response.ok);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response body:', errorText);
+        console.error('Full response details:', {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
+          body: errorText
+        });
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+      }
+
       const data = await response.json();
+      console.log('Event created successfully:', data);
       return data;
     } catch (error) {
       console.error('Error creating event:', error);
@@ -30,6 +62,7 @@ export const eventService = {
       const token = localStorage.getItem('jwtToken');
       console.log('Token disponible:', !!token);
       console.log('URL completa:', `${API_BASE_URL}/api/events`);
+      console.log('Token for GET events:', token ? token.substring(0, 50) + '...' : 'No token');
       
       const response = await fetch(`${API_BASE_URL}/api/events`, {
         method: 'GET',
@@ -39,20 +72,17 @@ export const eventService = {
         }
       });
       
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
-      console.log('Response headers:', response.headers);
+      console.log('GET Events - Response status:', response.status);
+      console.log('GET Events - Response ok:', response.ok);
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Error response body:', errorText);
+        console.error('GET Events - Error response body:', errorText);
         throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
       }
       
       const data = await response.json();
       console.log('Data received from backend:', data);
-      console.log('Data type:', typeof data);
-      console.log('Is array:', Array.isArray(data));
       
       return data;
     } catch (error) {
@@ -85,25 +115,75 @@ export const eventService = {
     }
   },
 
-  // Obtener evento por título y grupo
-  getEventByTitleAndGroup: async (title, groupName) => {
+  // Obtener eventos por creador
+  getEventsByCreator: async (creatorUsername) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/events/find?title=${encodeURIComponent(title)}&groupName=${encodeURIComponent(groupName)}`);
+      const response = await fetch(`${API_BASE_URL}/api/events/creator/${encodeURIComponent(creatorUsername)}`);
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('Error fetching event by title and group:', error);
+      console.error('Error fetching events by creator:', error);
+      throw error;
+    }
+  },
+
+  // Obtener eventos por tipo
+  getEventsByType: async (typeName) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/events/type/${encodeURIComponent(typeName)}`);
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching events by type:', error);
+      throw error;
+    }
+  },
+
+  // Obtener evento por título y creador
+  getEventByTitleAndCreator: async (title, creatorUsername) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/events/find?title=${encodeURIComponent(title)}&creatorUsername=${encodeURIComponent(creatorUsername)}`);
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching event by title and creator:', error);
+      throw error;
+    }
+  },
+
+  // Obtener mis eventos (eventos del usuario autenticado)
+  getMyEvents: async () => {
+    try {
+      const token = localStorage.getItem('jwtToken');
+      const response = await fetch(`${API_BASE_URL}/api/events/my-events`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response body:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching my events:', error);
       throw error;
     }
   },
 
   // Actualizar estado del evento
-  updateEventStatus: async (title, groupName, statusData) => {
+  updateEventStatus: async (title, creatorUsername, statusData) => {
     try {
       const token = localStorage.getItem('jwtToken');
-      console.log('Updating event status:', { title, groupName, statusData });
+      console.log('Updating event status:', { title, creatorUsername, statusData });
       
-      const response = await fetch(`${API_BASE_URL}/api/events/update-status?title=${encodeURIComponent(title)}&groupName=${encodeURIComponent(groupName)}`, {
+      const response = await fetch(`${API_BASE_URL}/api/events/update-status?title=${encodeURIComponent(title)}&creatorUsername=${encodeURIComponent(creatorUsername)}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -146,12 +226,16 @@ export const eventService = {
   },
 
   // Eliminar evento
-  deleteEvent: async (title, groupName) => {
+  deleteEvent: async (title, creatorUsername) => {
     try {
-      console.log('Deleting event:', { title, groupName });
+      const token = localStorage.getItem('jwtToken');
+      console.log('Deleting event:', { title, creatorUsername });
       
-      const response = await fetch(`${API_BASE_URL}/api/events/delete?title=${encodeURIComponent(title)}&groupName=${encodeURIComponent(groupName)}`, {
-        method: 'DELETE'
+      const response = await fetch(`${API_BASE_URL}/api/events/delete?title=${encodeURIComponent(title)}&creatorUsername=${encodeURIComponent(creatorUsername)}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : ''
+        }
       });
 
       console.log('Delete response status:', response.status);
@@ -183,18 +267,6 @@ export const eventService = {
       }
     } catch (error) {
       console.error('Error deleting event:', error);
-      throw error;
-    }
-  },
-
-  // Obtener eventos por grupo y estado
-  getEventsByGroupAndStatus: async (groupName, status) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/events/group/${encodeURIComponent(groupName)}/status/${status}`);
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error('Error fetching events by group and status:', error);
       throw error;
     }
   }

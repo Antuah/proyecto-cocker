@@ -1,54 +1,99 @@
 // src/components/EventForm.jsx
 import React, { useState, useEffect } from 'react';
 import { eventService } from '../services/eventService';
-import { groupService } from '../services/groupService';
+import typeService from '../services/typeService';
 import '../styles/EventForm.css';
 
 const EventForm = ({ isEditing, eventData, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
     title: '',
     date: '',
-    type: '',
-    groupName: '',
+    typeId: '',
     description: ''
-  })
+  });
 
-  const [groups, setGroups] = useState([]);
+  const [types, setTypes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Tipos de eventos disponibles
-  const eventTypes = [
-    'CONFERENCIA',
-    'TALLER',
-    'CAPACITACION',
-    'REUNIÓN',
-    'ACTIVIDAD_COMUNITARIA',
-    'EVENTO_AMBIENTAL',
-    'OTRO'
-  ];
-
   useEffect(() => {
-    fetchGroups();
+    fetchTypes();
     if (isEditing && eventData) {
       setFormData({
         title: eventData.title || '',
         date: eventData.eventDate ? eventData.eventDate.split('T')[0] : '',
-        type: eventData.eventType || '',
-        groupName: eventData.groupName || '',
+        typeId: eventData.type?.id || '',
         description: eventData.description || ''
       });
     }
   }, [isEditing, eventData]);
 
-  const fetchGroups = async () => {
+  const fetchTypes = async () => {
     try {
-      const groups = await groupService.getAllGroups();
-      // El servicio ya retorna directamente el array de grupos
-      setGroups(groups || []);
+      console.log('=== DEBUGGING TYPES FETCH ===');
+      const token = localStorage.getItem('jwtToken');
+      console.log('Token status:', {
+        hasToken: !!token,
+        tokenLength: token ? token.length : 0,
+        tokenStart: token ? token.substring(0, 20) + '...' : 'No token'
+      });
+
+      const typesData = await typeService.getAllTypes();
+      console.log('Types fetched successfully:', typesData);
+      console.log('Types data type:', typeof typesData);
+      console.log('Types data structure:', JSON.stringify(typesData, null, 2));
+      
+      // Manejar diferentes formatos de respuesta del backend
+      if (typesData && typesData.data && Array.isArray(typesData.data)) {
+        console.log('Using typesData.data format, found', typesData.data.length, 'types');
+        setTypes(typesData.data);
+      } else if (typesData && Array.isArray(typesData)) {
+        console.log('Using direct array format, found', typesData.length, 'types');
+        setTypes(typesData);
+      } else {
+        console.error('Formato de respuesta inesperado para tipos:', typesData);
+        console.log('Setting fallback types for debugging...');
+        // Datos de fallback para debugging
+        const fallbackTypes = [
+          { id: 1, name: 'Conferencia' },
+          { id: 2, name: 'Taller' },
+          { id: 3, name: 'Seminario' },
+          { id: 4, name: 'Evento Social' }
+        ];
+        setTypes(fallbackTypes);
+        setError('Usando datos de prueba - revisa la consola para más detalles');
+      }
+
+      // Probar si el endpoint de eventos funciona para verificar autenticación
+      try {
+        const eventsTest = await eventService.getAllEvents();
+        console.log('Events endpoint test (for auth verification):', eventsTest ? 'SUCCESS' : 'FAILED');
+      } catch (authTestError) {
+        console.warn('Events endpoint test failed (potential auth issue):', authTestError.message);
+      }
     } catch (error) {
-      console.error('Error fetching groups:', error);
-      setGroups([]);
+      console.error('Error fetching types:', error);
+      console.error('Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
+      
+      // Si hay error de autenticación, usar datos de fallback para debugging
+      if (error.message.includes('403') || error.message.includes('401')) {
+        console.log('Authentication error detected, using fallback data...');
+        const fallbackTypes = [
+          { id: 1, name: 'Conferencia' },
+          { id: 2, name: 'Taller' },
+          { id: 3, name: 'Seminario' },
+          { id: 4, name: 'Evento Social' }
+        ];
+        setTypes(fallbackTypes);
+        setError('Error de autenticación - revisa tu login. Usando datos de prueba.');
+      } else {
+        setTypes([]);
+        setError('Error al cargar los tipos de eventos: ' + error.message);
+      }
     }
   };
 
@@ -66,45 +111,62 @@ const EventForm = ({ isEditing, eventData, onSuccess, onCancel }) => {
     setError('');
 
     try {
-      if (!formData.title || !formData.date || !formData.type || !formData.groupName) {
+      // Verificar autenticación
+      const token = localStorage.getItem('jwtToken');
+      console.log('User authentication check:', {
+        hasToken: !!token,
+        tokenLength: token ? token.length : 0
+      });
+
+      if (!token) {
+        setError('No estás autenticado. Por favor, inicia sesión nuevamente.');
+        setLoading(false);
+        return;
+      }
+
+      if (!formData.title || !formData.date || !formData.typeId) {
         setError('Por favor, completa todos los campos requeridos');
         setLoading(false);
         return;
       }
 
+      console.log('Form data before submit:', formData);
+      console.log('Available types:', types);
+
       // Formatear la fecha y mapear los campos al formato esperado por el backend
+      const selectedType = types.find(type => type.id === parseInt(formData.typeId));
+      
       const eventRequestData = {
         title: formData.title,
         eventDate: new Date(formData.date).toISOString(),
-        eventType: formData.type,
-        groupName: formData.groupName,
+        eventType: selectedType?.name || '', // Enviar el NOMBRE del tipo, no el ID ni el objeto
         description: formData.description
       };
 
+      console.log('Submitting event data:', eventRequestData);
+      console.log('Selected type:', selectedType);
+
       let response;
       if (isEditing) {
-        // Para edición, usar el endpoint de actualización
-        response = await eventService.updateEventStatus(
-          eventData.title, 
-          eventData.groupName, 
-          { status: 'PROXIMAMENTE' } // Mantener el estado actual o el que corresponda
-        );
+        // Para edición, necesitaremos implementar el endpoint de actualización
+        response = await eventService.updateEvent(eventData.eventId, eventRequestData);
       } else {
         response = await eventService.createEvent(eventRequestData);
       }
 
-      if (response.status === 200 || response.status === 201) {
+      console.log('Response:', response);
+
+      if (response) {
         onSuccess();
         // Limpiar formulario
         setFormData({
           title: '',
           date: '',
-          type: '',
-          groupName: '',
+          typeId: '',
           description: ''
         });
       } else {
-        setError(response.message || 'Error al guardar el evento');
+        setError('Error al guardar el evento');
       }
     } catch (error) {
       setError('Error de conexión. Intenta de nuevo.');
@@ -148,36 +210,18 @@ const EventForm = ({ isEditing, eventData, onSuccess, onCancel }) => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="type">Tipo de Evento *</label>
+            <label htmlFor="typeId">Tipo de Evento *</label>
             <select
-              id="type"
-              name="type"
-              value={formData.type}
+              id="typeId"
+              name="typeId"
+              value={formData.typeId}
               onChange={handleChange}
               required
             >
               <option value="">Selecciona un tipo</option>
-              {eventTypes.map(type => (
-                <option key={type} value={type}>
-                  {type.replace('_', ' ')}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="groupName">Grupo *</label>
-            <select
-              id="groupName"
-              name="groupName"
-              value={formData.groupName}
-              onChange={handleChange}
-              required
-            >
-              <option value="">Selecciona un grupo</option>
-              {groups.map(group => (
-                <option key={group.id} value={group.name}>
-                  {group.name}
+              {types.map(type => (
+                <option key={type.id} value={type.id}>
+                  {type.name}
                 </option>
               ))}
             </select>

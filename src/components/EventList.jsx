@@ -36,7 +36,7 @@ const EventList = ({ onEditEvent, refreshTrigger }) => {
 
   useEffect(() => {
     filterEvents();
-  }, [events, statusFilter, searchTerm]);
+  }, [events, statusFilter, searchTerm]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchEvents = async () => {
     try {
@@ -78,8 +78,8 @@ const EventList = ({ onEditEvent, refreshTrigger }) => {
     if (searchTerm) {
       filtered = filtered.filter(event =>
         event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        event.eventType.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        event.groupName.toLowerCase().includes(searchTerm.toLowerCase())
+        (event.eventType && event.eventType.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        event.creatorUsername.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -92,7 +92,7 @@ const EventList = ({ onEditEvent, refreshTrigger }) => {
       
       const response = await eventService.updateEventStatus(
         event.title,
-        event.groupName,
+        event.creatorUsername,
         { status: newStatus }
       );
 
@@ -103,7 +103,7 @@ const EventList = ({ onEditEvent, refreshTrigger }) => {
         // Actualizar el evento en la lista local
         setEvents(prevEvents =>
           prevEvents.map(evt =>
-            evt.title === event.title && evt.groupName === event.groupName
+            evt.title === event.title && evt.creatorUsername === event.creatorUsername
               ? { ...evt, status: newStatus }
               : evt
           )
@@ -124,7 +124,7 @@ const EventList = ({ onEditEvent, refreshTrigger }) => {
       try {
         console.log('Deleting event:', event.title);
         
-        const response = await eventService.deleteEvent(event.title, event.groupName);
+        const response = await eventService.deleteEvent(event.title, event.creatorUsername);
         
         console.log('Delete response:', response);
         
@@ -132,7 +132,7 @@ const EventList = ({ onEditEvent, refreshTrigger }) => {
         if (response && (response.status === 200 || response.status === 204 || response.message)) {
           setEvents(prevEvents =>
             prevEvents.filter(evt =>
-              !(evt.title === event.title && evt.groupName === event.groupName)
+              !(evt.title === event.title && evt.creatorUsername === event.creatorUsername)
             )
           );
           console.log('Evento eliminado exitosamente');
@@ -192,7 +192,7 @@ const EventList = ({ onEditEvent, refreshTrigger }) => {
             <input
               type="text"
               id="search"
-              placeholder="Buscar por título, tipo o grupo..."
+              placeholder="Buscar por título, tipo o creador..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -207,7 +207,7 @@ const EventList = ({ onEditEvent, refreshTrigger }) => {
       ) : (
         <div className="events-grid">
           {filteredEvents.map((event, index) => (
-            <div key={`${event.title}-${event.groupName}-${index}`} className="event-card">
+            <div key={`${event.title}-${event.creatorUsername}-${index}`} className="event-card">
               <div className="event-header">
                 <h4 className="event-title">{event.title}</h4>
                 <span className={`event-status ${statusColors[event.status]}`}>
@@ -223,12 +223,12 @@ const EventList = ({ onEditEvent, refreshTrigger }) => {
 
                 <div className="event-detail">
                   <span className="detail-label">🏷️ Tipo:</span>
-                  <span className="detail-value">{event.eventType.replace('_', ' ')}</span>
+                  <span className="detail-value">{event.eventType || 'Sin tipo'}</span>
                 </div>
 
                 <div className="event-detail">
-                  <span className="detail-label">👥 Grupo:</span>
-                  <span className="detail-value">{event.groupName}</span>
+                  <span className="detail-label">👤 Creador:</span>
+                  <span className="detail-value">{event.creatorUsername}</span>
                 </div>
 
                 {event.description && (
