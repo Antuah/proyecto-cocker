@@ -148,8 +148,18 @@ const EventForm = ({ isEditing, eventData, onSuccess, onCancel }) => {
 
       let response;
       if (isEditing) {
-        // Para edición, necesitaremos implementar el endpoint de actualización
-        response = await eventService.updateEvent(eventData.eventId, eventRequestData);
+        // Para edición, usar el ID del evento
+        const eventId = eventData.id || eventData.eventId;
+        console.log('Editing event with ID:', eventId);
+        console.log('Event data object:', eventData);
+        
+        if (!eventId) {
+          setError('No se pudo identificar el evento a editar');
+          setLoading(false);
+          return;
+        }
+        
+        response = await eventService.updateEvent(eventId, eventRequestData);
       } else {
         response = await eventService.createEvent(eventRequestData);
       }

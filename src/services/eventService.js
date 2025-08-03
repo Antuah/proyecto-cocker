@@ -177,6 +177,49 @@ export const eventService = {
     }
   },
 
+  // Actualizar evento completo
+  updateEvent: async (eventId, eventData) => {
+    try {
+      const token = localStorage.getItem('jwtToken');
+      console.log('Updating event with ID:', eventId);
+      console.log('Update data:', eventData);
+      
+      if (!token || token.trim() === '') {
+        throw new Error('No authentication token found');
+      }
+
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token.trim()}`
+      };
+
+      console.log('Update request headers:', headers);
+      console.log('Update request body:', JSON.stringify(eventData, null, 2));
+      
+      const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`, {
+        method: 'PUT',
+        headers: headers,
+        body: JSON.stringify(eventData)
+      });
+
+      console.log('Update event response status:', response.status);
+      console.log('Update event response ok:', response.ok);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Update error response body:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('Event updated successfully:', data);
+      return data;
+    } catch (error) {
+      console.error('Error updating event:', error);
+      throw error;
+    }
+  },
+
   // Actualizar estado del evento
   updateEventStatus: async (title, creatorUsername, statusData) => {
     try {
