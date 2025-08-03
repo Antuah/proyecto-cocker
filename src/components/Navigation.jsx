@@ -1,10 +1,12 @@
 // src/components/Navigation.jsx
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import '../styles/Navigation.css';
 
 const Navigation = ({ onLogout, userData }) => {
   const location = useLocation();
+  const { isAdmin } = useAuth();
 
   const isActive = (path) => {
     return location.pathname === path;
@@ -32,6 +34,15 @@ const Navigation = ({ onLogout, userData }) => {
           >
             📅 Eventos
           </Link>
+          {/* Solo mostrar administradores de grupo para usuarios con rol = 1 (ADMIN) */}
+          {isAdmin() && (
+            <Link 
+              to="/admin-groups" 
+              className={`nav-link ${isActive('/admin-groups') ? 'active' : ''}`}
+            >
+              👨‍💼 Administradores
+            </Link>
+          )}
         </div>
         
         <div className="nav-user">

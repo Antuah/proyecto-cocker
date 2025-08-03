@@ -6,9 +6,17 @@ import Login from './screens/Login'; // Importa el nuevo componente Login
 import Register from './screens/Register'; // Importa el nuevo componente Register
 import Groups from './screens/Groups'; // Importa el componente de Grupos
 import Events from './screens/Events'; // Importa el componente de Eventos
+import AdminGroups from './screens/AdminGroups'; // Importa el componente de Administradores
 import Navigation from './components/Navigation'; // Componente de navegación
+import ProtectedRoute from './components/ProtectedRoute'; // Componente de ruta protegida
 import './styles/App.css'; // Si tienes estilos globales
 import './styles/Header.css'; // Importa los estilos del componente Login
+
+// Importar utilidades de debug en desarrollo
+if (process.env.NODE_ENV === 'development') {
+  import('./utils/testGroupUpdate');
+  import('./utils/debugAdminAssignment');
+}
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Estado para saber si el usuario está logueado
@@ -90,6 +98,11 @@ function App() {
                 } />
                 <Route path="/groups" element={<Groups />} />
                 <Route path="/events" element={<Events />} />
+                <Route path="/admin-groups" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminGroups />
+                  </ProtectedRoute>
+                } />
               </Routes>
             </>
           ) : (

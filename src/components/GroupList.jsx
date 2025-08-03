@@ -82,6 +82,7 @@ const GroupList = ({ groups, onEdit, onDelete }) => {
                 Colonia {getSortIcon('colonia')}
               </th>
               <th>Usuarios</th>
+              <th>Administrador</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -93,6 +94,9 @@ const GroupList = ({ groups, onEdit, onDelete }) => {
                 <td>{group.colonia}</td>
                 <td className="users-count">
                   {group.users ? group.users.length : 0} usuarios
+                </td>
+                <td>
+                  {group.adminUser ? group.adminUser.nombreCompleto || group.adminUser.username : 'Sin asignar'}
                 </td>
                 <td className="actions">
                   <button

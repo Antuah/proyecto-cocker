@@ -1,6 +1,8 @@
 // src/components/GroupForm.jsx
 import React, { useState, useEffect } from 'react';
 import { userService } from '../services/userService';
+import { adminGroupService } from '../services/adminGroupService';
+import { debugGroupOperation } from '../utils/debugHelper';
 import '../styles/GroupForm.css';
 
 const GroupForm = ({ group, onSubmit, onCancel }) => {
@@ -8,39 +10,93 @@ const GroupForm = ({ group, onSubmit, onCancel }) => {
     name: '',
     municipio: '',
     colonia: '',
-    selectedUsers: [] // Array de IDs de usuarios seleccionados
+    selectedUsers: [],  // Array de IDs de usuarios seleccionados (rol=3)
+    selectedAdmin: null // ID del administrador seleccionado (rol=2)
   });
-  const [users, setUsers] = useState([]); // Lista de usuarios con rol MEMBER
+  const [users, setUsers] = useState([]); // Lista de usuarios con rol MEMBER (rol=3)
+  const [availableAdmins, setAvailableAdmins] = useState([]); // Lista de admins disponibles (rol=2)
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [loadingAdmins, setLoadingAdmins] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Cargar usuarios con rol MEMBER al montar el componente
+  // Cargar usuarios con rol MEMBER y administradores disponibles al montar el componente
   useEffect(() => {
-    const loadUsers = async () => {
+    const loadData = async () => {
       setLoadingUsers(true);
+      setLoadingAdmins(true);
+      
       try {
+        // Cargar usuarios con rol MEMBER (rol=3)
         const memberUsers = await userService.getUsersWithMemberRole();
         setUsers(memberUsers);
+        
+        // Cargar administradores disponibles (rol=2 sin grupo)
+        const admins = await adminGroupService.getAvailableAdminGroups();
+        
+        // Si estamos editando un grupo y tiene administrador, incluirlo en la lista
+        if (group && group.adminUser) {
+          const currentAdminExists = admins.find(admin => admin.id === group.adminUser.id);
+          if (!currentAdminExists) {
+            admins.push(group.adminUser);
+          }
+        }
+        
+        setAvailableAdmins(admins);
       } catch (error) {
-        console.error('Error al cargar usuarios:', error);
+        console.error('Error al cargar datos:', error);
         setUsers([]);
+        setAvailableAdmins([]);
       } finally {
         setLoadingUsers(false);
+        setLoadingAdmins(false);
       }
     };
 
-    loadUsers();
-  }, []);
+    loadData();
+  }, [group]); // Incluir 'group' como dependencia
+
+  // Cargar administradores disponibles incluyendo el administrador actual si estamos editando
+  useEffect(() => {
+    const loadAdminsForEdit = async () => {
+      if (group && group.adminUser) {
+        setLoadingAdmins(true);
+        try {
+          // Obtener administradores disponibles
+          const admins = await adminGroupService.getAvailableAdminGroups();
+          
+          // Si el grupo tiene administrador, agregarlo a la lista aunque no esté disponible
+          const currentAdminExists = admins.find(admin => admin.id === group.adminUser.id);
+          if (!currentAdminExists) {
+            admins.push(group.adminUser);
+          }
+          
+          setAvailableAdmins(admins);
+        } catch (error) {
+          console.error('Error al cargar administradores para edición:', error);
+        } finally {
+          setLoadingAdmins(false);
+        }
+      }
+    };
+
+    loadAdminsForEdit();
+  }, [group]);
 
   // Llenar el formulario si estamos editando
   useEffect(() => {
     if (group) {
+      debugGroupOperation('GROUP_LOAD_FOR_EDIT', group);
       setFormData({
         name: group.name || '',
         municipio: group.municipio || '',
         colonia: group.colonia || '',
-        selectedUsers: group.userIds || group.users?.map(user => user.id) || []
+        selectedUsers: group.users ? group.users.map(user => user.id) : [],
+        selectedAdmin: group.adminUser ? group.adminUser.id : null
+      });
+      console.log('📝 Datos del formulario establecidos:', {
+        selectedUsers: group.users ? group.users.map(user => user.id) : [],
+        selectedAdmin: group.adminUser ? group.adminUser.id : null
       });
     }
   }, [group]);
@@ -90,6 +146,23 @@ const GroupForm = ({ group, onSubmit, onCancel }) => {
     }));
   };
 
+  // Manejar selección de administrador del grupo
+  const handleAdminSelection = (e) => {
+    const selectedValue = e.target.value;
+    const selectedId = selectedValue === '' ? null : parseInt(selectedValue);
+    
+    console.log('👤 Administrador seleccionado:', {
+      selectedValue,
+      selectedId,
+      availableAdmins: availableAdmins.length
+    });
+    
+    setFormData(prev => ({
+      ...prev,
+      selectedAdmin: selectedId
+    }));
+  };
+
   const validateForm = () => {
     const newErrors = {};
     
@@ -114,6 +187,25 @@ const GroupForm = ({ group, onSubmit, onCancel }) => {
     
     if (!validateForm()) {
       return;
+    }
+    
+    console.log('📝 Enviando datos del formulario:', {
+      isEditing: !!group,
+      groupId: group?.id,
+      formData: formData,
+      selectedAdmin: formData.selectedAdmin,
+      selectedAdminType: typeof formData.selectedAdmin,
+      availableAdminsCount: availableAdmins.length
+    });
+    
+    // Validar que el administrador seleccionado esté en la lista de disponibles
+    if (formData.selectedAdmin) {
+      const selectedAdminExists = availableAdmins.find(admin => admin.id === formData.selectedAdmin);
+      console.log('🔍 Validación de administrador:', {
+        selectedAdminId: formData.selectedAdmin,
+        existsInAvailable: !!selectedAdminExists,
+        selectedAdminData: selectedAdminExists
+      });
     }
     
     setIsSubmitting(true);
@@ -186,6 +278,35 @@ const GroupForm = ({ group, onSubmit, onCancel }) => {
               disabled={isSubmitting}
             />
             {errors.colonia && <span className="error-message">{errors.colonia}</span>}
+          </div>
+
+          {/* Selección de Administrador del Grupo */}
+          <div className="form-group">
+            <label htmlFor="adminUser">Administrador del Grupo</label>
+            <select
+              id="adminUser"
+              name="adminUser"
+              value={formData.selectedAdmin || ''}
+              onChange={handleAdminSelection}
+              disabled={isSubmitting || loadingAdmins}
+              className="admin-select"
+            >
+              <option value="">Sin asignar (opcional)</option>
+              {loadingAdmins ? (
+                <option disabled>Cargando administradores...</option>
+              ) : availableAdmins.length === 0 ? (
+                <option disabled>No hay administradores disponibles</option>
+              ) : (
+                availableAdmins.map(admin => (
+                  <option key={admin.id} value={admin.id}>
+                    {admin.nombreCompleto || `${admin.nombre} ${admin.apellidoPaterno}` || admin.username}
+                  </option>
+                ))
+              )}
+            </select>
+            <small className="help-text">
+              Solo se muestran administradores de grupo (rol=2) que no tengan un grupo asignado
+            </small>
           </div>
 
           <div className="form-group">
