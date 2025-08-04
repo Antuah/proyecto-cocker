@@ -71,8 +71,19 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <header className="App-header">
-          <h1>Sistema de Gestión Ambiental</h1>
+        <header className="header">
+          <div className="header-content">
+            <div className="header-icon-container">
+              <div className="header-icon">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 2C8.1 2 5 5.1 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.9-3.1-7-7-7zm0 9.5L8.5 8 12 4.5 15.5 8 12 11.5z"/>
+                  <path d="M8.5 8C8.5 8 12 11.5 12 11.5S15.5 8 15.5 8C15.5 8 12 4.5 12 4.5S8.5 8 8.5 8z"/>
+                </svg>
+              </div>
+            </div>
+            <h1>Sistema de Gestión Ambiental</h1>
+            <p className="header-subtitle">Comité Ambiental de Morelos</p>
+          </div>
         </header>
         <main>
           {loading ? (

@@ -1,83 +1,169 @@
-/* src/styles/Events.css */
+/* Events Component - Environmental Theme */
 
 .events-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%);
+  padding: 2rem;
+}
+
+.events-wrapper {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
-  min-height: 80vh;
 }
 
 .events-header {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 25px rgba(5, 150, 105, 0.1);
+  border: 1px solid rgba(5, 150, 105, 0.1);
   text-align: center;
-  margin-bottom: 30px;
-  padding: 30px 20px;
-  background: linear-gradient(135deg, #4caf50, #2e7d32);
-  border-radius: 16px;
-  color: white;
-  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
 }
 
 .events-header h2 {
-  margin: 0 0 10px 0;
-  font-size: 2.2rem;
+  margin: 0 0 0.75rem 0;
+  font-size: 2rem;
   font-weight: 700;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: #047857;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.events-header-icon {
+  background-color: #059669;
+  padding: 0.75rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.events-header-icon svg {
+  height: 1.5rem;
+  width: 1.5rem;
+  color: white;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .events-subtitle {
-  margin: 0 0 25px 0;
-  font-size: 1.1rem;
-  opacity: 0.9;
-  font-weight: 300;
-}
-
-.create-event-button {
-  background: white;
-  color: #2e7d32;
-  border: none;
-  padding: 15px 30px;
-  border-radius: 25px;
-  cursor: pointer;
+  margin: 0 0 1.5rem 0;
   font-size: 1rem;
+  color: #6b7280;
+  font-weight: 400;
+}
+.create-event-button {
+  background-color: #059669;
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
   font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .create-event-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-  background: #f8f9fa;
+  background-color: #047857;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(5, 150, 105, 0.4);
+}
+
+.create-event-button svg {
+  height: 1rem;
+  width: 1rem;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .events-content {
   background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(5, 150, 105, 0.1);
+  border: 1px solid rgba(5, 150, 105, 0.1);
   overflow: hidden;
   min-height: 500px;
+  padding: 2rem;
+}
+
+/* Loading and Empty States */
+.events-loading {
+  text-align: center;
+  padding: 4rem;
+  color: #6b7280;
+  font-size: 1.125rem;
+}
+
+.events-empty {
+  text-align: center;
+  padding: 4rem;
+  color: #6b7280;
+}
+
+.events-empty-icon {
+  background-color: #f0fdf4;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.events-empty-icon svg {
+  height: 2rem;
+  width: 2rem;
+  color: #059669;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 /* Responsive design */
 @media (max-width: 768px) {
   .events-container {
-    padding: 10px;
+    padding: 1rem;
   }
   
   .events-header {
-    padding: 20px 15px;
+    padding: 1.5rem;
   }
   
   .events-header h2 {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
+    flex-direction: column;
+    gap: 0.5rem;
   }
   
   .events-subtitle {
-    font-size: 1rem;
+    font-size: 0.875rem;
   }
   
   .create-event-button {
-    padding: 12px 24px;
-    font-size: 0.9rem;
+    padding: 0.625rem 1.5rem;
+    font-size: 0.75rem;
+  }
+  
+  .events-content {
+    padding: 1.5rem;
   }
 }

@@ -91,40 +91,57 @@ const Groups = () => {
   if (loading) {
     return (
       <div className="groups-container">
-        <div className="loading">Cargando grupos...</div>
+        <div className="groups-wrapper">
+          <div className="loading">Cargando grupos...</div>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="groups-container">
-      <div className="groups-header">
-        <h2>Gestión de Grupos</h2>
-        <button 
-          className="btn btn-primary"
-          onClick={handleNewGroup}
-          disabled={showForm}
-        >
-          Nuevo Grupo
-        </button>
+      <div className="groups-wrapper">
+        <div className="groups-header">
+          <h2>
+            <div className="groups-header-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
+                <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+              </svg>
+            </div>
+            Gestión de Grupos
+          </h2>
+          <button 
+            className="btn btn-primary"
+            onClick={handleNewGroup}
+            disabled={showForm}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{height: '1rem', width: '1rem'}}>
+              <path d="M12 5v14m7-7H5"/>
+            </svg>
+            Nuevo Grupo
+          </button>
+        </div>
+
+        {error && <div className="alert alert-error">{error}</div>}
+        {successMessage && <div className="alert alert-success">{successMessage}</div>}
+
+        <div className="groups-content">
+          {showForm && (
+            <GroupForm
+              group={editingGroup}
+              onSubmit={editingGroup ? handleUpdateGroup : handleCreateGroup}
+              onCancel={handleCancelForm}
+            />
+          )}
+
+          <GroupList
+            groups={groups}
+            onEdit={handleEditGroup}
+            onDelete={handleDeleteGroup}
+          />
+        </div>
       </div>
-
-      {error && <div className="alert alert-error">{error}</div>}
-      {successMessage && <div className="alert alert-success">{successMessage}</div>}
-
-      {showForm && (
-        <GroupForm
-          group={editingGroup}
-          onSubmit={editingGroup ? handleUpdateGroup : handleCreateGroup}
-          onCancel={handleCancelForm}
-        />
-      )}
-
-      <GroupList
-        groups={groups}
-        onEdit={handleEditGroup}
-        onDelete={handleDeleteGroup}
-      />
     </div>
   );
 };

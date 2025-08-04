@@ -1,113 +1,153 @@
-/* src/styles/GroupForm.css */
+/* GroupForm Component - Environmental Theme */
 .group-form-container {
-  margin-bottom: 30px;
+  margin-bottom: 2rem;
 }
 
 .group-form-card {
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 30px;
-  border: 1px solid #e1e5e9;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(5, 150, 105, 0.1);
+  padding: 2rem;
+  border: 1px solid rgba(5, 150, 105, 0.1);
+  margin-bottom: 2rem;
 }
 
 .group-form-card h3 {
-  margin: 0 0 25px 0;
-  color: #2c3e50;
+  margin: 0 0 1.5rem 0;
+  color: #047857;
   font-size: 1.5rem;
-  font-weight: 600;
+  font-weight: 700;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.form-title-icon {
+  background-color: #059669;
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-title-icon svg {
+  height: 1.25rem;
+  width: 1.25rem;
+  color: white;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .group-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 1.5rem;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
+  gap: 0.5rem;
 }
 
 .form-group label {
-  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-weight: 600;
-  color: #2c3e50;
-  font-size: 14px;
+  color: #374151;
+  font-size: 0.875rem;
 }
 
-.form-group input {
-  padding: 12px 16px;
-  border: 2px solid #e1e5e9;
-  border-radius: 6px;
-  font-size: 14px;
+.form-group label svg {
+  height: 1rem;
+  width: 1rem;
+  color: #059669;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  padding: 0.75rem 1rem;
+  border: 1px solid #bbf7d0;
+  border-radius: 0.5rem;
+  font-size: 1rem;
   transition: all 0.2s ease;
   outline: none;
+  font-family: inherit;
 }
 
-.form-group input:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
 }
 
-.form-group input:disabled {
-  background-color: #f8f9fa;
+.form-group input:disabled,
+.form-group textarea:disabled,
+.form-group select:disabled {
+  background-color: #f9fafb;
   cursor: not-allowed;
   opacity: 0.7;
+  border-color: #d1d5db;
 }
 
 .input-error {
-  border-color: #dc3545 !important;
-  background-color: #fff5f5;
+  border-color: #ef4444 !important;
+  background-color: #fef2f2;
 }
 
 .input-error:focus {
-  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1) !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
 }
 
 .error-message {
-  color: #dc3545;
-  font-size: 12px;
-  margin-top: 5px;
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
   font-weight: 500;
 }
 
 .form-actions {
   display: flex;
-  gap: 15px;
+  gap: 1rem;
   justify-content: flex-end;
-  margin-top: 10px;
-  padding-top: 20px;
-  border-top: 1px solid #e1e5e9;
+  margin-top: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(5, 150, 105, 0.1);
 }
 
 /* Validación visual en tiempo real */
 .form-group input:valid:not(:placeholder-shown) {
-  border-color: #28a745;
+  border-color: #10b981;
 }
 
 .form-group input:invalid:not(:placeholder-shown) {
-  border-color: #dc3545;
-}
-
-/* Estados de carga */
-.form-group input:disabled {
-  background-color: #f8f9fa;
-  border-color: #e9ecef;
-  color: #6c757d;
+  border-color: #ef4444;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
   .group-form-card {
-    padding: 20px;
-    margin: 0 10px;
+    padding: 1.5rem;
+    margin: 0;
   }
   
   .form-actions {
     flex-direction: column;
-    gap: 10px;
+    gap: 0.75rem;
   }
   
   .form-actions .btn {
@@ -118,66 +158,69 @@
 
 @media (max-width: 480px) {
   .group-form-card {
-    padding: 15px;
-    margin: 0 5px;
+    padding: 1rem;
   }
   
   .group-form-card h3 {
     font-size: 1.25rem;
   }
   
-  .form-group input {
-    padding: 10px 12px;
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    padding: 0.625rem 0.875rem;
   }
 }
 
-/* Estilos para la selección de usuarios */
+/* Estilos para la selección de usuarios - Environmental Theme */
 .user-selection-container {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 15px;
-  background-color: #f9f9f9;
+  border: 1px solid #bbf7d0;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
   max-height: 300px;
   overflow-y: auto;
 }
 
 .loading-users, .no-users {
   text-align: center;
-  padding: 20px;
-  color: #666;
+  padding: 1.5rem;
+  color: #6b7280;
   font-style: italic;
 }
 
 .user-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0.75rem;
 }
 
 .user-item {
   background: white;
-  border: 1px solid #e1e5e9;
-  border-radius: 6px;
-  padding: 12px;
+  border: 1px solid rgba(5, 150, 105, 0.2);
+  border-radius: 0.5rem;
+  padding: 0.875rem;
   transition: all 0.2s ease;
 }
 
 .user-item:hover {
-  border-color: #4a90e2;
-  box-shadow: 0 2px 4px rgba(74, 144, 226, 0.1);
+  border-color: #059669;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.15);
+  transform: translateY(-1px);
 }
 
 .user-checkbox {
   display: flex;
   align-items: center;
   cursor: pointer;
-  gap: 12px;
+  gap: 0.875rem;
 }
 
 .user-checkbox input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+  width: 1.125rem;
+  height: 1.125rem;
   cursor: pointer;
+  accent-color: #059669;
 }
 
 .user-info {
@@ -188,25 +231,25 @@
 
 .user-name {
   font-weight: 600;
-  color: #2c3e50;
-  font-size: 14px;
+  color: #047857;
+  font-size: 0.875rem;
 }
 
 .user-email {
-  color: #666;
-  font-size: 12px;
-  margin-top: 2px;
+  color: #6b7280;
+  font-size: 0.75rem;
+  margin-top: 0.125rem;
 }
 
 .selected-count {
-  margin-top: 15px;
-  padding: 8px 12px;
-  background-color: #e3f2fd;
-  border: 1px solid #bbdefb;
-  border-radius: 4px;
-  color: #1976d2;
-  font-size: 14px;
-  font-weight: 500;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  border: 1px solid #059669;
+  border-radius: 0.5rem;
+  color: #047857;
+  font-size: 0.875rem;
+  font-weight: 600;
   text-align: center;
 }
 
@@ -217,44 +260,46 @@
   }
   
   .user-item {
-    padding: 8px;
+    padding: 0.75rem;
   }
   
   .user-name {
-    font-size: 13px;
+    font-size: 0.8125rem;
   }
   
   .user-email {
-    font-size: 11px;
+    font-size: 0.6875rem;
   }
 }
 
-/* Estilos para selector de administrador */
+/* Estilos para selector de administrador - Environmental Theme */
 .admin-select {
-  padding: 12px 16px;
-  border: 2px solid #e1e5e9;
-  border-radius: 6px;
-  font-size: 14px;
+  padding: 0.75rem 1rem;
+  border: 1px solid #bbf7d0;
+  border-radius: 0.5rem;
+  font-size: 1rem;
   background-color: white;
   transition: all 0.2s ease;
   outline: none;
   cursor: pointer;
+  font-family: inherit;
 }
 
 .admin-select:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
 }
 
 .admin-select:disabled {
-  background-color: #f8f9fa;
+  background-color: #f9fafb;
   cursor: not-allowed;
   opacity: 0.6;
+  border-color: #d1d5db;
 }
 
 .help-text {
-  margin-top: 5px;
-  font-size: 12px;
-  color: #6c757d;
+  margin-top: 0.375rem;
+  font-size: 0.75rem;
+  color: #6b7280;
   font-style: italic;
 }

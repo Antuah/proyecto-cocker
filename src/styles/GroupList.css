@@ -1,47 +1,67 @@
-/* src/styles/GroupList.css */
+/* GroupList Component - Environmental Theme */
 .group-list-container {
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(5, 150, 105, 0.1);
   overflow: hidden;
-  border: 1px solid #e1e5e9;
+  border: 1px solid rgba(5, 150, 105, 0.1);
 }
 
 .list-controls {
-  padding: 20px;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #e1e5e9;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border-bottom: 1px solid rgba(5, 150, 105, 0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px;
+  gap: 1.5rem;
+  flex-wrap: wrap;
 }
 
 .search-box {
   flex: 1;
   max-width: 400px;
+  position: relative;
 }
 
 .search-input {
   width: 100%;
-  padding: 10px 16px;
-  border: 2px solid #e1e5e9;
-  border-radius: 6px;
-  font-size: 14px;
-  transition: border-color 0.2s ease;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1px solid #bbf7d0;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: all 0.2s ease;
   outline: none;
+  background: white;
 }
 
 .search-input:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+}
+
+.search-box::before {
+  content: '';
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1rem;
+  height: 1rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23059669'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'/%3E%3C/svg%3E");
+  background-size: contain;
+  pointer-events: none;
 }
 
 .results-count {
-  color: #6c757d;
-  font-size: 14px;
-  font-weight: 500;
+  color: #047857;
+  font-size: 0.875rem;
+  font-weight: 600;
   white-space: nowrap;
+  background: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  border: 1px solid #bbf7d0;
 }
 
 .table-container {

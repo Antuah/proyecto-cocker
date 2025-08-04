@@ -232,11 +232,29 @@ const GroupForm = ({ group, onSubmit, onCancel }) => {
   return (
     <div className="group-form-container">
       <div className="group-form-card">
-        <h3>{group ? 'Editar Grupo' : 'Nuevo Grupo'}</h3>
+        <h3>
+          <div className="form-title-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="m22 21-3-3"/>
+              <circle cx="20" cy="8" r="3"/>
+            </svg>
+          </div>
+          {group ? 'Editar Grupo' : 'Nuevo Grupo'}
+        </h3>
         
         <form onSubmit={handleSubmit} className="group-form">
           <div className="form-group">
-            <label htmlFor="name">Nombre del Grupo *</label>
+            <label htmlFor="name">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="m22 21-3-3"/>
+                <circle cx="20" cy="8" r="3"/>
+              </svg>
+              Nombre del Grupo *
+            </label>
             <input
               type="text"
               id="name"
@@ -251,7 +269,13 @@ const GroupForm = ({ group, onSubmit, onCancel }) => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="municipio">Municipio *</label>
+            <label htmlFor="municipio">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              Municipio *
+            </label>
             <input
               type="text"
               id="municipio"
@@ -266,7 +290,14 @@ const GroupForm = ({ group, onSubmit, onCancel }) => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="colonia">Colonia *</label>
+            <label htmlFor="colonia">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 21h18"/>
+                <path d="M5 21V7l8-4v18"/>
+                <path d="M19 21V11l-6-4"/>
+              </svg>
+              Colonia *
+            </label>
             <input
               type="text"
               id="colonia"

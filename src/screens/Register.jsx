@@ -141,141 +141,203 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
 
   // Función para determinar la clase del mensaje
   const getMessageClass = () => {
-    if (message.includes('exitosamente')) return 'message success';
-    if (message.includes('Error') || message.includes('errores')) return 'message error';
-    if (message.includes('Registrando')) return 'message loading';
-    return 'message';
+    if (message.includes('exitosamente')) return 'message-container message-success';
+    if (message.includes('Error') || message.includes('errores')) return 'message-container message-error';
+    if (message.includes('Registrando')) return 'message-container message-loading';
+    return 'message-container message-default';
   };
 
   return (
-    <div className="register-container">
-      <div className="register-card">
-        <div className="register-icon">👤</div>
-        <h2 className="register-title">Crear Cuenta</h2>
-        
-        <form className="register-form" onSubmit={handleSubmit}>
-          <div className="form-row">
-            <div className="form-group">
-              <label className="form-label" htmlFor="username">Usuario *</label>
-              <input
-                className={`form-input ${errors.username ? 'input-error' : ''}`}
-                type="text"
-                id="username"
-                name="username"
-                placeholder="Nombre de usuario"
-                value={formData.username}
-                onChange={handleInputChange}
-                disabled={isSubmitting}
-                required
-              />
-              {errors.username && <span className="error-message">{errors.username}</span>}
-            </div>
-
-            <div className="form-group">
-              <label className="form-label" htmlFor="nombreCompleto">Nombre Completo *</label>
-              <input
-                className={`form-input ${errors.nombreCompleto ? 'input-error' : ''}`}
-                type="text"
-                id="nombreCompleto"
-                name="nombreCompleto"
-                placeholder="Tu nombre completo"
-                value={formData.nombreCompleto}
-                onChange={handleInputChange}
-                disabled={isSubmitting}
-                required
-              />
-              {errors.nombreCompleto && <span className="error-message">{errors.nombreCompleto}</span>}
+    <div className="register-screen">
+      <div className="register-wrapper">
+        {/* Header */}
+        <div className="register-header">
+          <div className="register-icon-container">
+            <div className="register-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
+                <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+              </svg>
             </div>
           </div>
+          <h1 className="register-main-title">Comité de Gestión Ambiental</h1>
+          <p className="register-subtitle">Sistema de acceso para miembros</p>
+        </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label className="form-label" htmlFor="correo">Correo Electrónico *</label>
-              <input
-                className={`form-input ${errors.correo ? 'input-error' : ''}`}
-                type="email"
-                id="correo"
-                name="correo"
-                placeholder="tu@email.com"
-                value={formData.correo}
-                onChange={handleInputChange}
-                disabled={isSubmitting}
-                required
-              />
-              {errors.correo && <span className="error-message">{errors.correo}</span>}
-            </div>
-
-            <div className="form-group">
-              <label className="form-label" htmlFor="telefono">Teléfono *</label>
-              <input
-                className={`form-input ${errors.telefono ? 'input-error' : ''}`}
-                type="tel"
-                id="telefono"
-                name="telefono"
-                placeholder="1234567890"
-                value={formData.telefono}
-                onChange={handleInputChange}
-                disabled={isSubmitting}
-                required
-              />
-              {errors.telefono && <span className="error-message">{errors.telefono}</span>}
-            </div>
+        <div className="register-card">
+          <div className="register-card-header">
+            <h2 className="register-title">Registro de Miembro</h2>
+            <p className="register-description">Completa el formulario para unirte al comité</p>
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label className="form-label" htmlFor="password">Contraseña *</label>
-              <input
-                className={`form-input ${errors.password ? 'input-error' : ''}`}
-                type="password"
-                id="password"
-                name="password"
-                placeholder="Tu contraseña"
-                value={formData.password}
-                onChange={handleInputChange}
-                disabled={isSubmitting}
-                required
-              />
-              {errors.password && <span className="error-message">{errors.password}</span>}
-            </div>
+          <div className="register-form-container">
+            <form onSubmit={handleSubmit} className="register-form">
+              {/* Primera fila: Usuario y Nombre */}
+              <div className="form-row">
+                <div className="form-field">
+                  <label htmlFor="username" className="form-label">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    Usuario *
+                  </label>
+                  <input
+                    id="username"
+                    name="username"
+                    type="text"
+                    placeholder="Nombre de usuario"
+                    value={formData.username}
+                    onChange={handleInputChange}
+                    disabled={isSubmitting}
+                    required
+                    className={`form-input ${errors.username ? 'input-error' : ''}`}
+                  />
+                  {errors.username && <span className="error-text">{errors.username}</span>}
+                </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="confirmPassword">Confirmar Contraseña *</label>
-              <input
-                className={`form-input ${errors.confirmPassword ? 'input-error' : ''}`}
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                placeholder="Repite tu contraseña"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
+                <div className="form-field">
+                  <label htmlFor="nombreCompleto" className="form-label">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    Nombre Completo *
+                  </label>
+                  <input
+                    id="nombreCompleto"
+                    name="nombreCompleto"
+                    type="text"
+                    placeholder="Tu nombre completo"
+                    value={formData.nombreCompleto}
+                    onChange={handleInputChange}
+                    disabled={isSubmitting}
+                    required
+                    className={`form-input ${errors.nombreCompleto ? 'input-error' : ''}`}
+                  />
+                  {errors.nombreCompleto && <span className="error-text">{errors.nombreCompleto}</span>}
+                </div>
+              </div>
+
+              {/* Segunda fila: Email y Teléfono */}
+              <div className="form-row">
+                <div className="form-field">
+                  <label htmlFor="correo" className="form-label">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                    </svg>
+                    Correo Electrónico *
+                  </label>
+                  <input
+                    id="correo"
+                    name="correo"
+                    type="email"
+                    placeholder="tu@email.com"
+                    value={formData.correo}
+                    onChange={handleInputChange}
+                    disabled={isSubmitting}
+                    required
+                    className={`form-input ${errors.correo ? 'input-error' : ''}`}
+                  />
+                  {errors.correo && <span className="error-text">{errors.correo}</span>}
+                </div>
+
+                <div className="form-field">
+                  <label htmlFor="telefono" className="form-label">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    Teléfono *
+                  </label>
+                  <input
+                    id="telefono"
+                    name="telefono"
+                    type="tel"
+                    placeholder="1234567890"
+                    value={formData.telefono}
+                    onChange={handleInputChange}
+                    disabled={isSubmitting}
+                    required
+                    className={`form-input ${errors.telefono ? 'input-error' : ''}`}
+                  />
+                  {errors.telefono && <span className="error-text">{errors.telefono}</span>}
+                </div>
+              </div>
+
+              {/* Tercera fila: Contraseñas */}
+              <div className="form-row">
+                <div className="form-field">
+                  <label htmlFor="password" className="form-label">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    Contraseña *
+                  </label>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    disabled={isSubmitting}
+                    required
+                    className={`form-input ${errors.password ? 'input-error' : ''}`}
+                  />
+                  {errors.password && <span className="error-text">{errors.password}</span>}
+                </div>
+
+                <div className="form-field">
+                  <label htmlFor="confirmPassword" className="form-label">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    Confirmar Contraseña *
+                  </label>
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    placeholder="••••••••"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    disabled={isSubmitting}
+                    required
+                    className={`form-input ${errors.confirmPassword ? 'input-error' : ''}`}
+                  />
+                  {errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
+                </div>
+              </div>
+
+              <button 
+                type="submit"
                 disabled={isSubmitting}
-                required
-              />
-              {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
+                className="submit-button"
+              >
+                {isSubmitting ? 'Registrando...' : 'Registrarse'}
+              </button>
+            </form>
+
+            {message && (
+              <div className={getMessageClass()}>
+                {message}
+              </div>
+            )}
+
+            <div className="register-footer">
+              <p>¿Ya tienes cuenta?</p>
+              <button
+                onClick={onBackToLogin}
+                disabled={isSubmitting}
+                className="login-link"
+              >
+                Inicia sesión aquí
+              </button>
             </div>
           </div>
+        </div>
 
-          <button 
-            className="submit-button" 
-            type="submit"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? 'Registrando...' : 'Crear Cuenta'}
-          </button>
-        </form>
-
-        {message && <div className={getMessageClass()}>{message}</div>}
-        
-        <div className="register-footer">
-          <p>¿Ya tienes cuenta?</p>
-          <button 
-            className="link-button" 
-            onClick={onBackToLogin}
-            disabled={isSubmitting}
-          >
-            Iniciar Sesión
-          </button>
+        <div className="register-disclaimer">
+          <p>Al registrarte, aceptas contribuir a la protección del medio ambiente</p>
+          <p>y seguir las políticas del comité.</p>
         </div>
       </div>
     </div>
