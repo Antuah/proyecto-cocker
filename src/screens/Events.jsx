@@ -1,5 +1,6 @@
 // src/screens/Events.jsx
 import React, { useState } from 'react';
+import Swal from 'sweetalert2';
 import EventForm from '../components/EventForm';
 import EventList from '../components/EventList';
 import '../styles/Events.css';

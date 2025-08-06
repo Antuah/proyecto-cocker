@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Swal from 'sweetalert2';
 import '../styles/Login.css'; // Importa el nuevo componente Login
 
 function Login({ onLoginSuccess, onShowRegister }) {
@@ -62,12 +63,26 @@ function Login({ onLoginSuccess, onShowRegister }) {
         // Si la respuesta no fue exitosa, lee el mensaje de error del backend si lo hay
         const errorData = await response.json();
         console.error('Error en el inicio de sesión:', errorData);
-        setMessage(`Error al iniciar sesión: ${errorData.message || 'Credenciales inválidas.'}`);
+        
+        await Swal.fire({
+          title: 'Error de autenticación',
+          text: errorData.message || 'Credenciales inválidas. Verifica tu usuario y contraseña.',
+          icon: 'error',
+          confirmButtonText: 'Reintentar',
+          confirmButtonColor: '#dc2626'
+        });
       }
     } catch (error) {
       // Captura cualquier error de red o del proceso de fetch
       console.error('Error de conexión o de red:', error);
-      setMessage('No se pudo conectar con el servidor. Intenta de nuevo más tarde.');
+      
+      await Swal.fire({
+        title: 'Error de conexión',
+        text: 'No se pudo conectar con el servidor. Intenta de nuevo más tarde.',
+        icon: 'error',
+        confirmButtonText: 'Reintentar',
+        confirmButtonColor: '#dc2626'
+      });
     }
   };
 

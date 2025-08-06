@@ -1,5 +1,6 @@
 // src/screens/Groups.jsx
 import React, { useState, useEffect } from 'react';
+import Swal from 'sweetalert2';
 import { groupService } from '../services/groupService';
 import GroupForm from '../components/GroupForm';
 import GroupList from '../components/GroupList';
@@ -8,10 +9,8 @@ import '../styles/Groups.css';
 const Groups = () => {
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [editingGroup, setEditingGroup] = useState(null);
-  const [successMessage, setSuccessMessage] = useState('');
 
   // Cargar grupos al montar el componente
   useEffect(() => {
@@ -23,9 +22,14 @@ const Groups = () => {
       setLoading(true);
       const data = await groupService.getAllGroups();
       setGroups(data);
-      setError(null);
     } catch (err) {
-      setError('Error al cargar los grupos');
+      await Swal.fire({
+        title: 'Error de conexión',
+        text: 'No se pudieron cargar los grupos. Verifica tu conexión.',
+        icon: 'error',
+        confirmButtonText: 'Reintentar',
+        confirmButtonColor: '#dc2626'
+      });
       console.error('Error:', err);
     } finally {
       setLoading(false);
@@ -35,12 +39,25 @@ const Groups = () => {
   const handleCreateGroup = async (groupData) => {
     try {
       await groupService.createGroup(groupData);
-      setSuccessMessage('Grupo creado exitosamente');
+      await Swal.fire({
+        title: '¡Éxito!',
+        text: 'Grupo creado exitosamente',
+        icon: 'success',
+        confirmButtonText: 'Continuar',
+        confirmButtonColor: '#059669',
+        timer: 3000,
+        timerProgressBar: true
+      });
       setShowForm(false);
       loadGroups();
-      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
-      setError('Error al crear el grupo');
+      await Swal.fire({
+        title: 'Error',
+        text: 'Error al crear el grupo',
+        icon: 'error',
+        confirmButtonText: 'Reintentar',
+        confirmButtonColor: '#dc2626'
+      });
       console.error('Error:', err);
     }
   };
@@ -48,26 +65,64 @@ const Groups = () => {
   const handleUpdateGroup = async (groupData) => {
     try {
       await groupService.updateGroup(editingGroup.id, groupData);
-      setSuccessMessage('Grupo actualizado exitosamente');
+      await Swal.fire({
+        title: '¡Actualizado!',
+        text: 'Grupo actualizado exitosamente',
+        icon: 'success',
+        confirmButtonText: 'Continuar',
+        confirmButtonColor: '#059669',
+        timer: 3000,
+        timerProgressBar: true
+      });
       setEditingGroup(null);
       setShowForm(false);
       loadGroups();
-      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
-      setError('Error al actualizar el grupo');
+      await Swal.fire({
+        title: 'Error',
+        text: 'Error al actualizar el grupo',
+        icon: 'error',
+        confirmButtonText: 'Reintentar',
+        confirmButtonColor: '#dc2626'
+      });
       console.error('Error:', err);
     }
   };
 
   const handleDeleteGroup = async (id) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este grupo?')) {
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Esta acción eliminará el grupo permanentemente',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      reverseButtons: true
+    });
+
+    if (result.isConfirmed) {
       try {
         await groupService.deleteGroup(id);
-        setSuccessMessage('Grupo eliminado exitosamente');
+        await Swal.fire({
+          title: '¡Eliminado!',
+          text: 'El grupo ha sido eliminado exitosamente',
+          icon: 'success',
+          confirmButtonText: 'Continuar',
+          confirmButtonColor: '#059669',
+          timer: 3000,
+          timerProgressBar: true
+        });
         loadGroups();
-        setTimeout(() => setSuccessMessage(''), 3000);
       } catch (err) {
-        setError('Error al eliminar el grupo');
+        await Swal.fire({
+          title: 'Error',
+          text: 'Error al eliminar el grupo',
+          icon: 'error',
+          confirmButtonText: 'Reintentar',
+          confirmButtonColor: '#dc2626'
+        });
         console.error('Error:', err);
       }
     }
@@ -105,8 +160,10 @@ const Groups = () => {
           <h2>
             <div className="groups-header-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
-                <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
               </svg>
             </div>
             Gestión de Grupos
@@ -122,9 +179,6 @@ const Groups = () => {
             Nuevo Grupo
           </button>
         </div>
-
-        {error && <div className="alert alert-error">{error}</div>}
-        {successMessage && <div className="alert alert-success">{successMessage}</div>}
 
         <div className="groups-content">
           {showForm && (

@@ -68,7 +68,6 @@ const Navigation = ({ onLogout, userData }) => {
         </div>
         
         <div className="nav-user">
-          <span className="user-name">{userData?.username || 'Usuario'}</span>
           <button className="logout-button" onClick={onLogout}>
             Cerrar Sesión
           </button>

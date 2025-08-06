@@ -199,6 +199,19 @@
   color: #374151;
   min-width: 100px;
   font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.detail-label svg {
+  color: #059669;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
 }
 
 .detail-value {
@@ -263,6 +276,19 @@
   transition: all 0.2s ease;
   text-transform: uppercase;
   letter-spacing: 0.025em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.edit-button svg,
+.delete-button svg {
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .edit-button {

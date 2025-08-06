@@ -1,5 +1,6 @@
 // src/components/EventForm.jsx
 import React, { useState, useEffect } from 'react';
+import Swal from 'sweetalert2';
 import { eventService } from '../services/eventService';
 import typeService from '../services/typeService';
 import '../styles/EventForm.css';
@@ -14,45 +15,50 @@ const EventForm = ({ isEditing, eventData, onSuccess, onCancel }) => {
 
   const [types, setTypes] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchTypes();
-    if (isEditing && eventData) {
+  }, []);
+
+  useEffect(() => {
+    if (isEditing && eventData && types.length > 0) {
+      // Buscar el tipo correcto basado en el nombre del evento
+      let selectedTypeId = '';
+      
+      if (eventData.eventType) {
+        // Buscar por nombre del tipo
+        const matchingType = types.find(type => 
+          type.name === eventData.eventType || 
+          type.name.toLowerCase() === eventData.eventType.toLowerCase()
+        );
+        selectedTypeId = matchingType ? matchingType.id.toString() : '';
+      } else if (eventData.type && eventData.type.id) {
+        // Si tiene el objeto tipo completo
+        selectedTypeId = eventData.type.id.toString();
+      } else if (eventData.typeId) {
+        // Si tiene typeId directamente
+        selectedTypeId = eventData.typeId.toString();
+      }
+
       setFormData({
         title: eventData.title || '',
         date: eventData.eventDate ? eventData.eventDate.split('T')[0] : '',
-        typeId: eventData.type?.id || '',
+        typeId: selectedTypeId,
         description: eventData.description || ''
       });
     }
-  }, [isEditing, eventData]);
+  }, [isEditing, eventData, types]);
 
   const fetchTypes = async () => {
     try {
-      console.log('=== DEBUGGING TYPES FETCH ===');
-      const token = localStorage.getItem('jwtToken');
-      console.log('Token status:', {
-        hasToken: !!token,
-        tokenLength: token ? token.length : 0,
-        tokenStart: token ? token.substring(0, 20) + '...' : 'No token'
-      });
-
       const typesData = await typeService.getAllTypes();
-      console.log('Types fetched successfully:', typesData);
-      console.log('Types data type:', typeof typesData);
-      console.log('Types data structure:', JSON.stringify(typesData, null, 2));
       
       // Manejar diferentes formatos de respuesta del backend
       if (typesData && typesData.data && Array.isArray(typesData.data)) {
-        console.log('Using typesData.data format, found', typesData.data.length, 'types');
         setTypes(typesData.data);
       } else if (typesData && Array.isArray(typesData)) {
-        console.log('Using direct array format, found', typesData.length, 'types');
         setTypes(typesData);
       } else {
-        console.error('Formato de respuesta inesperado para tipos:', typesData);
-        console.log('Setting fallback types for debugging...');
         // Datos de fallback para debugging
         const fallbackTypes = [
           { id: 1, name: 'Conferencia' },
@@ -61,27 +67,18 @@ const EventForm = ({ isEditing, eventData, onSuccess, onCancel }) => {
           { id: 4, name: 'Evento Social' }
         ];
         setTypes(fallbackTypes);
-        setError('Usando datos de prueba - revisa la consola para más detalles');
-      }
-
-      // Probar si el endpoint de eventos funciona para verificar autenticación
-      try {
-        const eventsTest = await eventService.getAllEvents();
-        console.log('Events endpoint test (for auth verification):', eventsTest ? 'SUCCESS' : 'FAILED');
-      } catch (authTestError) {
-        console.warn('Events endpoint test failed (potential auth issue):', authTestError.message);
+        
+        await Swal.fire({
+          title: 'Datos de prueba',
+          text: 'Usando datos de prueba - revisa la consola para más detalles',
+          icon: 'info',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#059669'
+        });
       }
     } catch (error) {
-      console.error('Error fetching types:', error);
-      console.error('Error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      });
-      
       // Si hay error de autenticación, usar datos de fallback para debugging
       if (error.message.includes('403') || error.message.includes('401')) {
-        console.log('Authentication error detected, using fallback data...');
         const fallbackTypes = [
           { id: 1, name: 'Conferencia' },
           { id: 2, name: 'Taller' },
@@ -89,10 +86,24 @@ const EventForm = ({ isEditing, eventData, onSuccess, onCancel }) => {
           { id: 4, name: 'Evento Social' }
         ];
         setTypes(fallbackTypes);
-        setError('Error de autenticación - revisa tu login. Usando datos de prueba.');
+        
+        await Swal.fire({
+          title: 'Error de autenticación',
+          text: 'Error de autenticación - revisa tu login. Usando datos de prueba.',
+          icon: 'warning',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#059669'
+        });
       } else {
         setTypes([]);
-        setError('Error al cargar los tipos de eventos: ' + error.message);
+        
+        await Swal.fire({
+          title: 'Error al cargar tipos',
+          text: 'Error al cargar los tipos de eventos: ' + error.message,
+          icon: 'error',
+          confirmButtonText: 'Reintentar',
+          confirmButtonColor: '#dc2626'
+        });
       }
     }
   };
@@ -108,30 +119,34 @@ const EventForm = ({ isEditing, eventData, onSuccess, onCancel }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
 
     try {
       // Verificar autenticación
       const token = localStorage.getItem('jwtToken');
-      console.log('User authentication check:', {
-        hasToken: !!token,
-        tokenLength: token ? token.length : 0
-      });
 
       if (!token) {
-        setError('No estás autenticado. Por favor, inicia sesión nuevamente.');
+        await Swal.fire({
+          title: 'Sesión expirada',
+          text: 'No estás autenticado. Por favor, inicia sesión nuevamente.',
+          icon: 'warning',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#059669'
+        });
         setLoading(false);
         return;
       }
 
       if (!formData.title || !formData.date || !formData.typeId) {
-        setError('Por favor, completa todos los campos requeridos');
+        await Swal.fire({
+          title: 'Campos incompletos',
+          text: 'Por favor, completa todos los campos requeridos',
+          icon: 'warning',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#059669'
+        });
         setLoading(false);
         return;
       }
-
-      console.log('Form data before submit:', formData);
-      console.log('Available types:', types);
 
       // Formatear la fecha y mapear los campos al formato esperado por el backend
       const selectedType = types.find(type => type.id === parseInt(formData.typeId));
@@ -143,18 +158,19 @@ const EventForm = ({ isEditing, eventData, onSuccess, onCancel }) => {
         description: formData.description
       };
 
-      console.log('Submitting event data:', eventRequestData);
-      console.log('Selected type:', selectedType);
-
       let response;
       if (isEditing) {
         // Para edición, usar el ID del evento
         const eventId = eventData.id || eventData.eventId;
-        console.log('Editing event with ID:', eventId);
-        console.log('Event data object:', eventData);
         
         if (!eventId) {
-          setError('No se pudo identificar el evento a editar');
+          await Swal.fire({
+            title: 'Error',
+            text: 'No se pudo identificar el evento a editar',
+            icon: 'error',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#dc2626'
+          });
           setLoading(false);
           return;
         }
@@ -164,9 +180,17 @@ const EventForm = ({ isEditing, eventData, onSuccess, onCancel }) => {
         response = await eventService.createEvent(eventRequestData);
       }
 
-      console.log('Response:', response);
-
       if (response) {
+        await Swal.fire({
+          title: '¡Éxito!',
+          text: isEditing ? 'Evento actualizado exitosamente' : 'Evento creado exitosamente',
+          icon: 'success',
+          confirmButtonText: 'Continuar',
+          confirmButtonColor: '#059669',
+          timer: 3000,
+          timerProgressBar: true
+        });
+        
         onSuccess();
         // Limpiar formulario
         setFormData({
@@ -176,10 +200,22 @@ const EventForm = ({ isEditing, eventData, onSuccess, onCancel }) => {
           description: ''
         });
       } else {
-        setError('Error al guardar el evento');
+        await Swal.fire({
+          title: 'Error',
+          text: 'Error al guardar el evento',
+          icon: 'error',
+          confirmButtonText: 'Reintentar',
+          confirmButtonColor: '#dc2626'
+        });
       }
     } catch (error) {
-      setError('Error de conexión. Intenta de nuevo.');
+      await Swal.fire({
+        title: 'Error de conexión',
+        text: 'Error de conexión. Intenta de nuevo.',
+        icon: 'error',
+        confirmButtonText: 'Reintentar',
+        confirmButtonColor: '#dc2626'
+      });
       console.error('Error:', error);
     } finally {
       setLoading(false);
@@ -198,8 +234,6 @@ const EventForm = ({ isEditing, eventData, onSuccess, onCancel }) => {
           </div>
           {isEditing ? 'Editar Evento' : 'Crear Nuevo Evento'}
         </h3>
-        
-        {error && <div className="error-message">{error}</div>}
         
         <form onSubmit={handleSubmit}>
           <div className="form-group">

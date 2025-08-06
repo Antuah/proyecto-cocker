@@ -1,5 +1,6 @@
 // src/screens/Register.jsx
 import React, { useState } from 'react';
+import Swal from 'sweetalert2';
 import { registerService } from '../services/registerService';
 import '../styles/Register.css';
 
@@ -100,12 +101,17 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
     e.preventDefault();
     
     if (!validateForm()) {
-      setMessage('Por favor, corrige los errores en el formulario');
+      await Swal.fire({
+        title: 'Formulario incompleto',
+        text: 'Por favor, corrige los errores en el formulario',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#059669'
+      });
       return;
     }
 
     setIsSubmitting(true);
-    setMessage('Registrando usuario...');
 
     try {
       // Excluir confirmPassword de los datos enviados
@@ -114,7 +120,16 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
       const response = await registerService.registerUser(dataToSend);
       
       console.log('Usuario registrado exitosamente:', response);
-      setMessage('¡Usuario registrado exitosamente! Puedes iniciar sesión ahora.');
+      
+      await Swal.fire({
+        title: '¡Registro exitoso!',
+        text: 'Usuario registrado exitosamente. Puedes iniciar sesión ahora.',
+        icon: 'success',
+        confirmButtonText: 'Continuar',
+        confirmButtonColor: '#059669',
+        timer: 3000,
+        timerProgressBar: true
+      });
       
       // Limpiar formulario
       setFormData({
@@ -133,7 +148,14 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
 
     } catch (error) {
       console.error('Error en el registro:', error);
-      setMessage(`Error al registrar usuario: ${error.message}`);
+      
+      await Swal.fire({
+        title: 'Error en el registro',
+        text: `Error al registrar usuario: ${error.message}`,
+        icon: 'error',
+        confirmButtonText: 'Reintentar',
+        confirmButtonColor: '#dc2626'
+      });
     } finally {
       setIsSubmitting(false);
     }
