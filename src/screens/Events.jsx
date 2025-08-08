@@ -3,12 +3,28 @@ import React, { useState } from 'react';
 import Swal from 'sweetalert2';
 import EventForm from '../components/EventForm';
 import EventList from '../components/EventList';
+import { authService } from '../services/authService';
 import '../styles/Events.css';
 
 const Events = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Función para verificar si el usuario puede crear eventos (solo admin y adminGroup)
+  const canCreateEvents = () => {
+    const user = authService.getCurrentUser();
+    const isAdmin = authService.hasRole('admin');
+    const isAdminGroup = authService.hasRole('adminGroup');
+    
+    // Debug logs para ayudar a diagnosticar problemas de roles
+    console.log('Current user:', user);
+    console.log('Has admin role:', isAdmin);
+    console.log('Has adminGroup role:', isAdminGroup);
+    console.log('Can create events:', isAdmin || isAdminGroup);
+    
+    return isAdmin || isAdminGroup;
+  };
 
   const handleCreateEvent = () => {
     setEditingEvent(null);
@@ -48,7 +64,7 @@ const Events = () => {
             Administra los eventos de los grupos ambientales
           </p>
           
-          {!showForm && (
+          {!showForm && canCreateEvents() && (
             <button 
               className="create-event-button"
               onClick={handleCreateEvent}

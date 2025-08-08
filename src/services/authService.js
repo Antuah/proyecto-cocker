@@ -119,29 +119,36 @@ export const authService = {
     const user = getUserFromToken();
     if (!user) return false;
 
-    // Normalizar el rol requerido
-    let roleId = requiredRole;
-    if (typeof requiredRole === 'string') {
-      switch (requiredRole) {
-        case 'admin':
-          roleId = 1;
-          break;
-        case 'adminGroup':
-          roleId = 2;
-          break;
-        case 'member':
-          roleId = 3;
-          break;
-        default:
-          roleId = parseInt(requiredRole);
-      }
+    // Debug log
+    console.log('Checking role:', requiredRole, 'for user:', user);
+
+    // El token tiene el formato: { roles: 'ROLE_ADMIN' }
+    // Necesitamos mapear los roles requeridos a su formato en el token
+    let expectedTokenRole = '';
+    
+    switch (requiredRole) {
+      case 'admin':
+        expectedTokenRole = 'ROLE_ADMIN';
+        break;
+      case 'adminGroup':
+        expectedTokenRole = 'ROLE_ADMINGROUP';
+        break;
+      case 'member':
+        expectedTokenRole = 'ROLE_MEMBER';
+        break;
+      default:
+        expectedTokenRole = requiredRole;
     }
 
-    // Verificar el rol del usuario
-    return user.rol_id === roleId || 
-           user.rolId === roleId || 
-           (user.rol && user.rol.id === roleId) ||
-           (user.role && user.role.id === roleId) ||
-           user.rol === roleId;
+    // Verificar el rol del usuario en el token
+    const userRoles = user.roles || user.role || '';
+    const hasRole = userRoles === expectedTokenRole ||
+                   userRoles.includes(expectedTokenRole);
+
+    console.log('Expected token role:', expectedTokenRole);
+    console.log('User roles from token:', userRoles);
+    console.log('Role check result:', hasRole);
+    
+    return hasRole;
   }
 };

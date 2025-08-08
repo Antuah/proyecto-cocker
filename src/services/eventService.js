@@ -312,6 +312,216 @@ export const eventService = {
       console.error('Error deleting event:', error);
       throw error;
     }
+  },
+
+    // Registrar asistencia a un evento
+  registerAttendance: async (eventId) => {
+    try {
+      const token = localStorage.getItem('jwtToken');
+      console.log('Registering attendance for event:', eventId);
+      
+      if (!token || token.trim() === '') {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/events/${eventId}/attend`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token.trim()}`
+        }
+      });
+
+      console.log('Register attendance response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response body:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('Register attendance response data:', data);
+      return data;
+    } catch (error) {
+      console.error('Error registering attendance:', error);
+      throw error;
+    }
+  },
+
+  // Cancelar asistencia a un evento
+  cancelAttendance: async (eventId) => {
+    try {
+      const token = localStorage.getItem('jwtToken');
+      console.log('Canceling attendance for event:', eventId);
+      
+      if (!token || token.trim() === '') {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/events/${eventId}/attend`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token.trim()}`
+        }
+      });
+
+      console.log('Cancel attendance response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response body:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('Cancel attendance response data:', data);
+      return data;
+    } catch (error) {
+      console.error('Error canceling attendance:', error);
+      throw error;
+    }
+  },
+
+  // Cancelar asistencia de un usuario a un evento
+  cancelAttendance: async (eventId) => {
+    try {
+      const token = localStorage.getItem('jwtToken');
+      console.log('Canceling attendance for event:', eventId);
+      
+      if (!token || token.trim() === '') {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/events/${eventId}/cancel-attendance`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token.trim()}`
+        }
+      });
+
+      console.log('Cancel attendance response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response body:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('Cancel attendance response data:', data);
+      return data;
+    } catch (error) {
+      console.error('Error canceling attendance:', error);
+      throw error;
+    }
+  },
+
+  // Verificar si el usuario está registrado para un evento
+  checkUserRegistration: async (eventId) => {
+    try {
+      const token = localStorage.getItem('jwtToken');
+      console.log('Checking user registration for event:', eventId);
+      
+      if (!token || token.trim() === '') {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/events/${eventId}/check-attendance`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token.trim()}`
+        }
+      });
+
+      console.log('Check registration response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response body:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('Check registration response data:', data);
+      return data;
+    } catch (error) {
+      console.error('Error checking user registration:', error);
+      throw error;
+    }
+  },
+
+  // Obtener eventos a los que asiste el usuario actual
+  getMyAttendingEvents: async () => {
+    try {
+      const token = localStorage.getItem('jwtToken');
+      console.log('Getting my attending events');
+      
+      if (!token || token.trim() === '') {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/events/my-attendance`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token.trim()}`
+        }
+      });
+
+      console.log('Get my attending events response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response body:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('Get my attending events response data:', data);
+      return data;
+    } catch (error) {
+      console.error('Error getting my attending events:', error);
+      throw error;
+    }
+  },
+
+  // Obtener asistentes de un evento
+  getEventAttendees: async (eventId) => {
+    try {
+      const token = localStorage.getItem('jwtToken');
+      console.log('Getting event attendees for event:', eventId);
+      
+      if (!token || token.trim() === '') {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/events/${eventId}/attendees`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token.trim()}`
+        }
+      });
+
+      console.log('Get event attendees response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response body:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('Get event attendees response data:', data);
+      return data;
+    } catch (error) {
+      console.error('Error getting event attendees:', error);
+      throw error;
+    }
   }
 };
 

@@ -265,7 +265,8 @@
 }
 
 .edit-button,
-.delete-button {
+.delete-button,
+.attendance-button {
   flex: 1;
   padding: 0.625rem 1rem;
   border: none;
@@ -283,7 +284,8 @@
 }
 
 .edit-button svg,
-.delete-button svg {
+.delete-button svg,
+.attendance-button svg {
   stroke: currentColor;
   fill: none;
   stroke-width: 2;
@@ -309,6 +311,50 @@
 .delete-button:hover {
   background: #fecaca;
   transform: translateY(-1px);
+}
+
+/* Botón de asistencia */
+.attendance-button {
+  min-width: 140px;
+  text-transform: none;
+  font-size: 0.875rem;
+}
+
+.attendance-button.not-registered {
+  background: #dcfce7;
+  color: #059669;
+  border: 1px solid #bbf7d0;
+}
+
+.attendance-button.not-registered:hover {
+  background: #bbf7d0;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(5, 150, 105, 0.15);
+}
+
+.attendance-button.registered {
+  background: #fef3c7;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+
+.attendance-button.registered:hover {
+  background: #fde68a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(217, 119, 6, 0.15);
+}
+
+.attendance-button:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.attendance-button:disabled:hover {
+  background: #f3f4f6;
+  transform: none;
+  box-shadow: none;
 }
 
 /* Responsive design */
@@ -341,4 +387,17 @@
   .action-buttons {
     flex-direction: column;
   }
+}
+
+/* Estilos para usuarios MEMBER */
+.member-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem 0;
+}
+
+.member-actions .attendance-button {
+  max-width: 200px;
+  width: 100%;
 }

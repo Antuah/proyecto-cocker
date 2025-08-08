@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import { eventService } from '../services/eventService';
+import { authService } from '../services/authService';
 import '../styles/EventList.css';
 
 const EventList = ({ onEditEvent, refreshTrigger }) => {
@@ -10,6 +11,7 @@ const EventList = ({ onEditEvent, refreshTrigger }) => {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
+  const [attendanceStatus, setAttendanceStatus] = useState({}); // Para manejar el estado de asistencia de cada evento
 
   const statusOptions = [
     { value: 'ALL', label: 'Todos los eventos' },
@@ -46,12 +48,13 @@ const EventList = ({ onEditEvent, refreshTrigger }) => {
       // Debug: Vamos a ver qué está retornando el backend
       console.log('Respuesta del backend:', response);
       
+      let eventsData = [];
       // El backend probablemente retorna {message: "...", data: [...], error: false}
       if (response && response.data && Array.isArray(response.data)) {
-        setEvents(response.data);
+        eventsData = response.data;
       } else if (response && Array.isArray(response)) {
         // Si retorna directamente un array
-        setEvents(response);
+        eventsData = response;
       } else {
         console.error('Formato de respuesta inesperado:', response);
         await Swal.fire({
@@ -61,7 +64,14 @@ const EventList = ({ onEditEvent, refreshTrigger }) => {
           confirmButtonText: 'Reintentar',
           confirmButtonColor: '#dc2626'
         });
+        return;
       }
+
+      setEvents(eventsData);
+
+      // Verificar estado de asistencia para cada evento
+      await checkAttendanceForAllEvents(eventsData);
+
     } catch (error) {
       await Swal.fire({
         title: 'Error de conexión',
@@ -150,6 +160,140 @@ const EventList = ({ onEditEvent, refreshTrigger }) => {
     }
   };
 
+  // ==================== FUNCIONES PARA ASISTENCIA A EVENTOS ====================
+
+  // Verificar estado de asistencia para todos los eventos
+  const checkAttendanceForAllEvents = async (eventsData) => {
+    try {
+      console.log('Checking attendance for events:', eventsData.map(e => e.id));
+      
+      // Usar getMyAttendingEvents para obtener todos los eventos a los que asiste el usuario
+      console.log('Calling getMyAttendingEvents...');
+      const myAttendingResponse = await eventService.getMyAttendingEvents();
+      console.log('My attending events response:', myAttendingResponse);
+      
+      // Extraer los eventos a los que asiste el usuario
+      let attendingEvents = [];
+      if (myAttendingResponse && myAttendingResponse.data && Array.isArray(myAttendingResponse.data)) {
+        attendingEvents = myAttendingResponse.data;
+        console.log('Found attending events in response.data');
+      } else if (myAttendingResponse && Array.isArray(myAttendingResponse)) {
+        attendingEvents = myAttendingResponse;
+        console.log('Found attending events in response directly');
+      } else {
+        console.log('No attending events found, response structure:', myAttendingResponse);
+        // Si no hay estructura reconocible, asumir que no hay eventos
+        attendingEvents = [];
+      }
+      
+      console.log('Events user is attending:', attendingEvents);
+      
+      // Crear un mapa de eventos a los que asiste (por ID)
+      const attendingEventIds = new Set(attendingEvents.map(event => event.id));
+      console.log('Attending event IDs:', Array.from(attendingEventIds));
+      
+      // Crear el mapa de estado de asistencia
+      const newAttendanceStatus = {};
+      eventsData.forEach(event => {
+        newAttendanceStatus[event.id] = attendingEventIds.has(event.id);
+      });
+      
+      console.log('Setting attendance status using getMyAttendingEvents:', newAttendanceStatus);
+      setAttendanceStatus(newAttendanceStatus);
+      
+    } catch (error) {
+      console.error('Error getting my attending events:', error);
+      
+      // En caso de error, establecer todos como no registrados
+      console.log('Setting all events as not attending due to error');
+      const newAttendanceStatus = {};
+      eventsData.forEach(event => {
+        newAttendanceStatus[event.id] = false;
+      });
+      setAttendanceStatus(newAttendanceStatus);
+    }
+  };
+
+  // Manejar asistencia al evento (registrar o cancelar)
+  const handleAttendance = async (event) => {
+    const isCurrentlyRegistered = attendanceStatus[event.id] || false;
+    console.log(`Current attendance status for event ${event.id}:`, isCurrentlyRegistered);
+    
+    try {
+      if (isCurrentlyRegistered) {
+        // Cancelar asistencia
+        console.log('Canceling attendance for event:', event.id);
+        await eventService.cancelAttendance(event.id);
+        
+        // Actualizar estado local
+        setAttendanceStatus(prev => ({
+          ...prev,
+          [event.id]: false
+        }));
+
+        await Swal.fire({
+          title: '¡Asistencia cancelada!',
+          text: `Has cancelado tu asistencia al evento "${event.title}".`,
+          icon: 'success',
+          confirmButtonText: 'Continuar',
+          confirmButtonColor: '#059669',
+          timer: 3000,
+          timerProgressBar: true
+        });
+      } else {
+        // Registrar asistencia
+        console.log('Registering attendance for event:', event.id);
+        await eventService.registerAttendance(event.id);
+        
+        // Actualizar estado local
+        setAttendanceStatus(prev => ({
+          ...prev,
+          [event.id]: true
+        }));
+
+        await Swal.fire({
+          title: '¡Asistencia confirmada!',
+          text: `Te has registrado para asistir al evento "${event.title}".`,
+          icon: 'success',
+          confirmButtonText: 'Continuar',
+          confirmButtonColor: '#059669',
+          timer: 3000,
+          timerProgressBar: true
+        });
+      }
+    } catch (error) {
+      console.error('Error handling attendance:', error);
+      
+      // Manejar error 409 - Ya registrado
+      if (error.message && error.message.includes('409')) {
+        console.log('User is already registered - updating local state');
+        // Si el error es 409, significa que ya está registrado
+        setAttendanceStatus(prev => ({
+          ...prev,
+          [event.id]: true
+        }));
+        
+        await Swal.fire({
+          title: 'Ya estás registrado',
+          text: `Ya estás registrado para asistir al evento "${event.title}". El estado se ha actualizado.`,
+          icon: 'info',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#059669',
+          timer: 3000,
+          timerProgressBar: true
+        });
+      } else {
+        await Swal.fire({
+          title: 'Error',
+          text: error.message || 'Error al actualizar la asistencia',
+          icon: 'error',
+          confirmButtonText: 'Reintentar',
+          confirmButtonColor: '#dc2626'
+        });
+      }
+    }
+  };
+
   const handleDeleteEvent = async (event) => {
     const result = await Swal.fire({
       title: '¿Estás seguro?',
@@ -209,6 +353,30 @@ const EventList = ({ onEditEvent, refreshTrigger }) => {
         });
       }
     }
+  };
+
+  // ==================== FUNCIONES DE CONTROL DE ACCESO ====================
+
+  // Verificar si el usuario es MEMBER
+  const isMemberUser = () => {
+    const result = authService.hasRole('member');
+    console.log('Is member user:', result);
+    return result;
+  };
+
+  // Verificar si el usuario puede gestionar eventos (ADMIN o ADMIN_GROUP)
+  const canManageEvents = () => {
+    const user = authService.getCurrentUser();
+    const isAdmin = authService.hasRole('admin');
+    const isAdminGroup = authService.hasRole('adminGroup');
+    const result = isAdmin || isAdminGroup;
+    
+    console.log('EventList - Current user:', user);
+    console.log('EventList - Has admin role:', isAdmin);
+    console.log('EventList - Has adminGroup role:', isAdminGroup);
+    console.log('EventList - Can manage events:', result);
+    
+    return result;
   };
 
   const formatDate = (dateString) => {
@@ -328,43 +496,106 @@ const EventList = ({ onEditEvent, refreshTrigger }) => {
               </div>
 
               <div className="event-actions">
-                <div className="status-actions">
-                  <label>Cambiar estado:</label>
-                  <select
-                    value={event.status}
-                    onChange={(e) => handleStatusChange(event, e.target.value)}
-                    className="status-select"
-                  >
-                    <option value="PROXIMAMENTE">Próximamente</option>
-                    <option value="EN_EJECUCION">En Ejecución</option>
-                    <option value="FINALIZADO">Finalizado</option>
-                  </select>
-                </div>
+                {canManageEvents() ? (
+                  // Vista para ADMIN y ADMIN_GROUP - pueden gestionar eventos
+                  <>
+                    <div className="status-actions">
+                      <label>Cambiar estado:</label>
+                      <select
+                        value={event.status}
+                        onChange={(e) => handleStatusChange(event, e.target.value)}
+                        className="status-select"
+                      >
+                        <option value="PROXIMAMENTE">Próximamente</option>
+                        <option value="EN_EJECUCION">En Ejecución</option>
+                        <option value="FINALIZADO">Finalizado</option>
+                      </select>
+                    </div>
 
-                <div className="action-buttons">
-                  <button
-                    className="edit-button"
-                    onClick={() => onEditEvent(event)}
-                  >
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                    </svg>
-                    Editar
-                  </button>
-                  <button
-                    className="delete-button"
-                    onClick={() => handleDeleteEvent(event)}
-                  >
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polyline points="3,6 5,6 21,6"/>
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                      <line x1="10" y1="11" x2="10" y2="17"/>
-                      <line x1="14" y1="11" x2="14" y2="17"/>
-                    </svg>
-                    Eliminar
-                  </button>
-                </div>
+                    <div className="action-buttons">
+                      <button
+                        className="edit-button"
+                        onClick={() => onEditEvent(event)}
+                      >
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                        Editar
+                      </button>
+                      
+                      <button
+                        className={`attendance-button ${attendanceStatus[event.id] ? 'registered' : 'not-registered'}`}
+                        onClick={() => handleAttendance(event)}
+                        disabled={event.status === 'FINALIZADO'}
+                      >
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+                          {attendanceStatus[event.id] ? (
+                            // Icono para cancelar asistencia
+                            <>
+                              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                              <circle cx="12" cy="7" r="4"/>
+                              <line x1="18" y1="8" x2="22" y2="12"/>
+                              <line x1="22" y1="8" x2="18" y2="12"/>
+                            </>
+                          ) : (
+                            // Icono para registrar asistencia
+                            <>
+                              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                              <circle cx="12" cy="7" r="4"/>
+                              <line x1="19" y1="8" x2="19" y2="14"/>
+                              <line x1="22" y1="11" x2="16" y2="11"/>
+                            </>
+                          )}
+                        </svg>
+                        {attendanceStatus[event.id] ? 'Cancelar Asistencia' : 'Asistir al Evento'}
+                      </button>
+
+                      <button
+                        className="delete-button"
+                        onClick={() => handleDeleteEvent(event)}
+                      >
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="3,6 5,6 21,6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                          <line x1="10" y1="11" x2="10" y2="17"/>
+                          <line x1="14" y1="11" x2="14" y2="17"/>
+                        </svg>
+                        Eliminar
+                      </button>
+                    </div>
+                  </>
+                ) : isMemberUser() ? (
+                  // Vista para MEMBER - solo pueden marcar asistencia
+                  <div className="member-actions">
+                    <button
+                      className={`attendance-button ${attendanceStatus[event.id] ? 'registered' : 'not-registered'}`}
+                      onClick={() => handleAttendance(event)}
+                      disabled={event.status === 'FINALIZADO'}
+                    >
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+                        {attendanceStatus[event.id] ? (
+                          // Icono para cancelar asistencia
+                          <>
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                            <line x1="18" y1="8" x2="22" y2="12"/>
+                            <line x1="22" y1="8" x2="18" y2="12"/>
+                          </>
+                        ) : (
+                          // Icono para registrar asistencia
+                          <>
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                            <line x1="19" y1="8" x2="19" y2="14"/>
+                            <line x1="22" y1="11" x2="16" y2="11"/>
+                          </>
+                        )}
+                      </svg>
+                      {attendanceStatus[event.id] ? 'Cancelar Asistencia' : 'Asistir al Evento'}
+                    </button>
+                  </div>
+                ) : null}
               </div>
             </div>
           ))}
