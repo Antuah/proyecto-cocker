@@ -6,7 +6,7 @@ import '../styles/Navigation.css';
 
 const Navigation = ({ onLogout, userData }) => {
   const location = useLocation();
-  const { isAdmin } = useAuth();
+  const { isAdmin, isAdminGroup } = useAuth();
 
   const isActive = (path) => {
     return location.pathname === path;
@@ -50,8 +50,8 @@ const Navigation = ({ onLogout, userData }) => {
             </svg>
             Eventos
           </Link>
-          {/* Solo mostrar administradores de grupo para usuarios con rol = 1 (ADMIN) */}
-          {isAdmin() && (
+          {/* Mostrar AdminGroups para ADMIN y ADMIN_GROUP */}
+          {(isAdmin() || isAdminGroup()) && (
             <Link 
               to="/admin-groups" 
               className={`nav-link ${isActive('/admin-groups') ? 'active' : ''}`}
@@ -62,7 +62,7 @@ const Navigation = ({ onLogout, userData }) => {
                 <line x1="20" y1="8" x2="20" y2="14"/>
                 <line x1="23" y1="11" x2="17" y2="11"/>
               </svg>
-              Administradores
+              AdminGroups
             </Link>
           )}
         </div>
