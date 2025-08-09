@@ -6,10 +6,15 @@ import '../styles/Navigation.css';
 
 const Navigation = ({ onLogout, userData }) => {
   const location = useLocation();
-  const { isAdmin, isAdminGroup } = useAuth();
+  const { isAdmin, isAdminGroup, isMember } = useAuth();
 
   const isActive = (path) => {
     return location.pathname === path;
+  };
+
+  // Verificar si el usuario puede gestionar grupos (solo ADMIN)
+  const canManageGroups = () => {
+    return isAdmin();
   };
 
   return (
@@ -26,18 +31,21 @@ const Navigation = ({ onLogout, userData }) => {
             </svg>
             Dashboard
           </Link>
-          <Link 
-            to="/groups" 
-            className={`nav-link ${isActive('/groups') ? 'active' : ''}`}
-          >
-            <svg viewBox="0 0 24 24" width="16" height="16">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-            Grupos
-          </Link>
+          {/* Solo mostrar Grupos para ADMIN */}
+          {canManageGroups() && (
+            <Link 
+              to="/groups" 
+              className={`nav-link ${isActive('/groups') ? 'active' : ''}`}
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              Grupos
+            </Link>
+          )}
           <Link 
             to="/events" 
             className={`nav-link ${isActive('/events') ? 'active' : ''}`}
@@ -50,8 +58,8 @@ const Navigation = ({ onLogout, userData }) => {
             </svg>
             Eventos
           </Link>
-          {/* Mostrar AdminGroups para ADMIN y ADMIN_GROUP */}
-          {(isAdmin() || isAdminGroup()) && (
+          {/* Solo mostrar AdminGroups para ADMIN */}
+          {isAdmin() && (
             <Link 
               to="/admin-groups" 
               className={`nav-link ${isActive('/admin-groups') ? 'active' : ''}`}

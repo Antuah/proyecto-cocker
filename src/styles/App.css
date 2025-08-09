@@ -97,11 +97,28 @@ main {
   color: #333;
   font-size: 2rem;
   font-weight: 600;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   background: linear-gradient(135deg, #059669 0%, #047857 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.welcome-role {
+  color: #047857;
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border-radius: 25px;
+  border: 1px solid rgba(5, 150, 105, 0.2);
+  display: inline-block;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.1);
+}
+
+.welcome-role strong {
+  font-weight: 700;
+  color: #059669;
 }
 
 .welcome-message {

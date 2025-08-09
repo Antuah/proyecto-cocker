@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import { groupService } from '../services/groupService';
+import { useAuth } from '../hooks/useAuth';
 import GroupForm from '../components/GroupForm';
 import GroupList from '../components/GroupList';
 import '../styles/Groups.css';
@@ -11,11 +12,7 @@ const Groups = () => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingGroup, setEditingGroup] = useState(null);
-
-  // Cargar grupos al montar el componente
-  useEffect(() => {
-    loadGroups();
-  }, []);
+  const { isAdmin, isAdminGroup, isMember } = useAuth();
 
   const loadGroups = async () => {
     try {
@@ -35,6 +32,36 @@ const Groups = () => {
       setLoading(false);
     }
   };
+
+  // Cargar grupos al montar el componente
+  useEffect(() => {
+    loadGroups();
+  }, []);
+
+  // Verificar si el usuario puede gestionar grupos (solo ADMIN)
+  const canManageGroups = () => {
+    return isAdmin();
+  };
+
+  // Si no es ADMIN, mostrar mensaje de acceso restringido
+  if (!isAdmin()) {
+    return (
+      <div className="groups-container">
+        <div className="access-denied">
+          <div className="access-denied-content">
+            <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="15" y1="9" x2="9" y2="15"/>
+              <line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
+            <h2>Acceso Restringido</h2>
+            <p>Solo los usuarios con rol de Administrador tienen acceso a la gestión de grupos.</p>
+            <p>Contacta a un administrador si necesitas permisos adicionales.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleCreateGroup = async (groupData) => {
     try {

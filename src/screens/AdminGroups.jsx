@@ -1,9 +1,11 @@
 // src/screens/AdminGroups.jsx
 import React, { useState, useEffect } from 'react';
 import { adminGroupService } from '../services/adminGroupService';
+import { useAuth } from '../hooks/useAuth';
 import '../styles/AdminGroups.css';
 
 const AdminGroups = () => {
+  const { isAdmin } = useAuth();
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -21,11 +23,6 @@ const AdminGroups = () => {
   const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
 
-  // Cargar lista de administradores de grupo al montar el componente
-  useEffect(() => {
-    loadAdminGroups();
-  }, []);
-
   const loadAdminGroups = async () => {
     try {
       const adminGroupsList = await adminGroupService.getAdminGroups();
@@ -35,6 +32,24 @@ const AdminGroups = () => {
       setError('Error al cargar la lista de administradores');
     }
   };
+
+  // Cargar lista de administradores de grupo al montar el componente
+  useEffect(() => {
+    loadAdminGroups();
+  }, []);
+
+  // Verificar si el usuario puede acceder a esta sección (solo ADMIN)
+  if (!isAdmin()) {
+    return (
+      <div className="access-denied">
+        <div className="access-denied-content">
+          <h2>Acceso Denegado</h2>
+          <p>No tienes permisos para acceder a la gestión de administradores de grupo.</p>
+          <p>Solo los usuarios con rol ADMIN pueden acceder a esta sección.</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

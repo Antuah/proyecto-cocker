@@ -9,6 +9,7 @@ import Events from './screens/Events'; // Importa el componente de Eventos
 import AdminGroups from './screens/AdminGroups'; // Importa el componente de Administradores
 import Navigation from './components/Navigation'; // Componente de navegación
 import ProtectedRoute from './components/ProtectedRoute'; // Componente de ruta protegida
+import { useAuth } from './hooks/useAuth'; // Hook para obtener información del usuario
 import './styles/App.css'; // Si tienes estilos globales
 import './styles/Header.css'; // Importa los estilos del componente Login
 
@@ -23,6 +24,43 @@ function App() {
   const [userData, setUserData] = useState(null); // Para guardar los datos del usuario logueado
   const [loading, setLoading] = useState(true); // Estado de carga inicial
   const [showRegister, setShowRegister] = useState(false); // Estado para mostrar registro
+
+  // Componente Dashboard con información del usuario
+  const Dashboard = () => {
+    const { user, isAdmin, isAdminGroup, isMember } = useAuth();
+
+    // Función para obtener el nombre del rol en español
+    const getRoleName = () => {
+      if (isAdmin()) {
+        return 'Administrador';
+      } else if (isAdminGroup()) {
+        return 'Administrador de Grupos';
+      } else if (isMember()) {
+        return 'Miembro';
+      }
+      return 'Usuario';
+    };
+
+    // Obtener el nombre del usuario
+    const getUserName = () => {
+      if (user) {
+        return user.sub || user.username || user.nombreCompleto || 'Usuario';
+      }
+      return 'Usuario';
+    };
+
+    return (
+      <div className="dashboard">
+        <div className="welcome-card">
+          <h2 className="welcome-title">¡Bienvenido{user && (user.sub || user.username) ? `, ${getUserName()}` : ''}!</h2>
+          <p className="welcome-role"><strong>{getRoleName()}</strong></p>
+          <p className="welcome-message">
+            Has iniciado sesión exitosamente en el Sistema de Gestión Ambiental de Morelos.
+          </p>
+        </div>
+      </div>
+    );
+  };
 
   // Verificar si hay un token válido al cargar la aplicación
   useEffect(() => {
@@ -93,16 +131,7 @@ function App() {
               <Navigation onLogout={handleLogout} userData={userData} />
               <Routes>
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                <Route path="/dashboard" element={
-                  <div className="dashboard">
-                    <div className="welcome-card">
-                      <h2 className="welcome-title">¡Bienvenido!</h2>
-                      <p className="welcome-message">
-                        Has iniciado sesión exitosamente en el Sistema de Gestión Ambiental de Morelos.
-                      </p>
-                    </div>
-                  </div>
-                } />
+                <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/groups" element={<Groups />} />
                 <Route path="/events" element={<Events />} />
                 <Route path="/admin-groups" element={
